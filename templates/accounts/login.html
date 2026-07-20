@@ -1,0 +1,68 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In | MedIntel</title>
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom Style -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <div class="auth-wrapper">
+        <div class="auth-card glass-panel">
+            <div class="auth-header">
+                <div class="auth-logo">
+                    <span class="brand-logo-icon" style="width: 48px; height: 48px; font-size: 1.5rem;"><i class="fa-solid fa-heart-pulse"></i></span>
+                </div>
+                <h1 class="auth-title">Welcome to MedIntel</h1>
+                <p class="auth-subtitle">Sign in to manage your medical intelligence</p>
+            </div>
+
+            <!-- Messages/Alerts -->
+            {% if messages %}
+                <div class="messages-container">
+                    {% for message in messages %}
+                        <div class="alert-message {{ message.tags }}">
+                            <span>{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="id_username" class="form-label">Username</label>
+                    <input type="text" name="username" id="id_username" class="form-control" placeholder="Enter Username" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_password" class="form-label">Password</label>
+                    <input type="password" name="password" id="id_password" class="form-control" placeholder="Enter Password" required>
+                </div>
+
+                {% if form.non_field_errors %}
+                    {% for error in form.non_field_errors %}
+                        <div class="form-group" style="text-align: center;">
+                            <span class="form-help" style="color: var(--color-danger); font-size: 0.85rem;">{{ error }}</span>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">
+                    <span>Sign In</span>
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                Don't have an account? <a href="{% url 'accounts:signup' %}" class="auth-footer-link">Register Here</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

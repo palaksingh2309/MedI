@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard | MedIntel{% endblock %}
+
+{% block content %}
+<div class="dashboard-title-bar">
+    <h1>Welcome back, {{ user.first_name|default:user.username }}!</h1>
+    <p class="welcome-msg">Here is a quick overview of your health assistant dashboard</p>
+</div>
+
+<!-- Metrics Overview -->
+<div class="metrics-grid">
+    <div class="metric-card glass-panel">
+        <div class="metric-icon-box">
+            <i class="fa-solid fa-notes-medical"></i>
+        </div>
+        <div class="metric-info">
+            <span class="metric-label">Disease Predictions</span>
+            <span class="metric-val">0</span>
+        </div>
+    </div>
+    
+    <div class="metric-card glass-panel success">
+        <div class="metric-icon-box">
+            <i class="fa-solid fa-shield-heart"></i>
+        </div>
+        <div class="metric-info">
+            <span class="metric-label">System Health Status</span>
+            <span class="metric-val" style="color: var(--color-accent); font-size: 1.2rem; font-weight: 700;">Normal</span>
+        </div>
+    </div>
+
+    <div class="metric-card glass-panel warning">
+        <div class="metric-icon-box">
+            <i class="fa-solid fa-hospital-user"></i>
+        </div>
+        <div class="metric-info">
+            <span class="metric-label">Saved Hospitals</span>
+            <span class="metric-val">0</span>
+        </div>
+    </div>
+</div>
+
+<!-- Main Sections Grid -->
+<div class="dashboard-grid">
+    <!-- Left Column -->
+    <div class="main-column">
+        <div class="panel-card glass-panel">
+            <div class="panel-header">
+                <h2 class="panel-title">MedIntel Sprints Overview</h2>
+            </div>
+            
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+                MedIntel is currently undergoing development. Below is the progress status of the various system modules:
+            </p>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+                <!-- Sprint 1 (Active) -->
+                <div style="padding: 1.25rem; border-radius: var(--border-radius-md); background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.2);">
+                    <div style="color: var(--color-primary); font-size: 1.5rem; margin-bottom: 0.5rem;">
+                        <i class="fa-solid fa-laptop-code"></i>
+                    </div>
+                    <h3 style="font-size: 1.05rem; margin-bottom: 0.25rem;">Sprint 1: Foundation</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Django base app, auth, responsive styling.</p>
+                    <span style="font-size: 0.75rem; background: var(--color-primary); color: white; padding: 2px 8px; border-radius: 10px; font-weight: bold;">Active</span>
+                </div>
+
+                <!-- Sprint 2 -->
+                <div style="padding: 1.25rem; border-radius: var(--border-radius-md); background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); opacity: 0.7;">
+                    <div style="color: var(--text-secondary); font-size: 1.5rem; margin-bottom: 0.5rem;">
+                        <i class="fa-solid fa-brain"></i>
+                    </div>
+                    <h3 style="font-size: 1.05rem; margin-bottom: 0.25rem;">Sprint 2: Predictor</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Disease symptoms AI classifier model.</p>
+                    <span style="font-size: 0.75rem; background: #374151; color: var(--text-secondary); padding: 2px 8px; border-radius: 10px;">Pending</span>
+                </div>
+
+                <!-- Sprint 3 -->
+                <div style="padding: 1.25rem; border-radius: var(--border-radius-md); background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); opacity: 0.7;">
+                    <div style="color: var(--text-secondary); font-size: 1.5rem; margin-bottom: 0.5rem;">
+                        <i class="fa-solid fa-map-location-dot"></i>
+                    </div>
+                    <h3 style="font-size: 1.05rem; margin-bottom: 0.25rem;">Sprint 3: Clinics/Meds</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Nearby clinics list and OTC drug guide.</p>
+                    <span style="font-size: 0.75rem; background: #374151; color: var(--text-secondary); padding: 2px 8px; border-radius: 10px;">Pending</span>
+                </div>
+
+                <!-- Sprint 4 -->
+                <div style="padding: 1.25rem; border-radius: var(--border-radius-md); background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); opacity: 0.7;">
+                    <div style="color: var(--text-secondary); font-size: 1.5rem; margin-bottom: 0.5rem;">
+                        <i class="fa-solid fa-robot"></i>
+                    </div>
+                    <h3 style="font-size: 1.05rem; margin-bottom: 0.25rem;">Sprint 4: AI & PDF</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Gemini Chatbot & report text summarization.</p>
+                    <span style="font-size: 0.75rem; background: #374151; color: var(--text-secondary); padding: 2px 8px; border-radius: 10px;">Pending</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="sidebar-column">
+        <div class="panel-card glass-panel" style="height: 100%;">
+            <div class="panel-header">
+                <h2 class="panel-title">System Activity</h2>
+            </div>
+            
+            <div class="activity-list">
+                {% for activity in recent_activities %}
+                    <div class="activity-item">
+                        <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                            <span style="font-size: 0.9rem; font-weight: 500;">{{ activity.activity }}</span>
+                            <span class="activity-meta"><i class="fa-regular fa-clock" style="margin-right: 4px;"></i> {{ activity.date }}</span>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 2rem 0;">No activities recorded yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

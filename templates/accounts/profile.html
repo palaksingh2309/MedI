@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Profile | MedIntel{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="dashboard-title-bar">
+        <h1>Account Profile</h1>
+        <p class="welcome-msg">Manage your personal settings and health profile identity</p>
+    </div>
+
+    <div class="profile-card glass-panel">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Avatar Section -->
+            <div class="profile-avatar-section">
+                <div class="profile-preview-wrapper">
+                    {% if user.profile_picture %}
+                        <img src="{{ user.profile_picture.url }}" alt="Profile Avatar" class="profile-preview" id="profile-img-preview">
+                    {% else %}
+                        <div class="profile-preview" id="profile-img-placeholder" style="display:flex;align-items:center;justify-content:center;background:#1e293b;font-size:3rem;font-weight:bold;color:var(--color-primary);">
+                            {{ user.username|slice:":1"|upper }}
+                        </div>
+                        <img src="" alt="Profile Avatar" class="profile-preview" id="profile-img-preview" style="display:none;">
+                    {% endif %}
+                    
+                    <label for="id_profile_picture" class="profile-upload-label">
+                        <i class="fa-solid fa-camera"></i>
+                        <input type="file" name="profile_picture" id="id_profile_picture" accept="image/*" onchange="previewImage(this);">
+                    </label>
+                </div>
+                
+                <div class="profile-meta-title">
+                    <h2>{{ user.first_name }} {{ user.last_name }}</h2>
+                    <p>@{{ user.username }} &bull; User ID: #{{ user.id }}</p>
+                </div>
+            </div>
+
+            <!-- Form Fields Grid -->
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label for="id_first_name" class="form-label">First Name</label>
+                    {{ form.first_name }}
+                    {% for error in form.first_name.errors %}
+                        <span class="form-help" style="color: var(--color-danger);">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_last_name" class="form-label">Last Name</label>
+                    {{ form.last_name }}
+                    {% for error in form.last_name.errors %}
+                        <span class="form-help" style="color: var(--color-danger);">{{ error }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="id_email" class="form-label">Email Address</label>
+                {{ form.email }}
+                {% for error in form.email.errors %}
+                    <span class="form-help" style="color: var(--color-danger);">{{ error }}</span>
+                {% endfor %}
+            </div>
+
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label for="id_phone_number" class="form-label">Phone Number</label>
+                    {{ form.phone_number }}
+                    {% for error in form.phone_number.errors %}
+                        <span class="form-help" style="color: var(--color-danger);">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_date_of_birth" class="form-label">Date of Birth</label>
+                    {{ form.date_of_birth }}
+                    {% for error in form.date_of_birth.errors %}
+                        <span class="form-help" style="color: var(--color-danger);">{{ error }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: flex-end;">
+                <a href="{% url 'dashboard:index' %}" class="btn btn-secondary" style="width: auto; padding: 0.85rem 2rem;">Cancel</a>
+                <button type="submit" class="btn btn-primary" style="width: auto; padding: 0.85rem 2.5rem;">
+                    <span>Save Changes</span>
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            
+            reader.onload = function (e) {
+                var preview = document.getElementById('profile-img-preview');
+                var placeholder = document.getElementById('profile-img-placeholder');
+                
+                if (placeholder) {
+                    placeholder.style.display = 'none';
+                }
+                
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            }
+            
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+{% endblock %}
