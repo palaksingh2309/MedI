@@ -1,0 +1,929 @@
+{% extends 'base.html' %}
+
+{% block title %}Disease Prediction | MedIntel{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* CSS Grid Layout for Prediction Page */
+    .predict-container {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 2rem;
+        align-items: start;
+    }
+
+    @media (max-width: 1024px) {
+        .predict-container {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Card Styling */
+    .panel-card {
+        border-radius: var(--border-radius-lg);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: visible;
+        transition: var(--transition-normal);
+    }
+
+    .panel-card:hover {
+        border-color: rgba(59, 130, 246, 0.2);
+    }
+
+    .panel-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .panel-subtitle {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Autocomplete Search input */
+    .search-wrapper {
+        position: relative;
+        margin-bottom: 1.25rem;
+    }
+
+    .search-input-box {
+        position: relative;
+    }
+
+    .search-input-box i.search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        font-size: 1.1rem;
+        pointer-events: none;
+    }
+
+    .search-input-box .form-control {
+        padding-left: 2.75rem;
+        font-size: 1rem;
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    /* Suggestions Dropdown */
+    .suggestions-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        max-height: 250px;
+        overflow-y: auto;
+        z-index: 50;
+        margin-top: 0.5rem;
+        border-radius: var(--border-radius-md);
+        box-shadow: var(--glass-shadow);
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        display: none;
+        animation: fadeIn 0.15s ease-out;
+    }
+
+    .suggestion-item {
+        padding: 0.85rem 1.25rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: var(--text-secondary);
+        transition: var(--transition-fast);
+        font-size: 0.95rem;
+    }
+
+    .suggestion-item:hover, .suggestion-item.highlighted {
+        background: rgba(59, 130, 246, 0.12);
+        color: var(--color-primary);
+    }
+
+    .suggestion-item span.symptom-code {
+        font-size: 0.75rem;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 2px 6px;
+        border-radius: 4px;
+        color: var(--text-muted);
+    }
+
+    /* Selected Tags styling */
+    .tags-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.65rem;
+        margin-bottom: 1.5rem;
+        min-height: 38px;
+        padding: 0.5rem 0;
+    }
+
+    .tag-item {
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        color: var(--color-primary);
+        padding: 0.4rem 0.85rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        animation: scaleUp 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .tag-item .tag-remove {
+        cursor: pointer;
+        color: var(--text-muted);
+        transition: var(--transition-fast);
+        font-size: 0.9rem;
+    }
+
+    .tag-item .tag-remove:hover {
+        color: var(--color-danger);
+    }
+
+    .placeholder-tags {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* Action Buttons */
+    .actions-bar {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+    }
+
+    .btn-action {
+        width: auto;
+        min-width: 150px;
+    }
+
+    /* Results layout */
+    .results-section {
+        display: none;
+        animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .results-card {
+        border-left: 4px solid var(--color-primary);
+        background: linear-gradient(180deg, rgba(59, 130, 246, 0.05), transparent);
+    }
+
+    .results-card.high-confidence {
+        border-left-color: var(--color-accent);
+        background: linear-gradient(180deg, rgba(16, 185, 129, 0.05), transparent);
+    }
+
+    .results-card.low-confidence {
+        border-left-color: var(--color-warning);
+        background: linear-gradient(180deg, rgba(245, 158, 11, 0.05), transparent);
+    }
+
+    .diagnosis-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1.5rem;
+    }
+
+    .diagnosis-disease {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--text-primary);
+        letter-spacing: -0.5px;
+    }
+
+    .diagnosis-badge {
+        padding: 0.35rem 0.85rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+
+    .badge-primary {
+        background: rgba(59, 130, 246, 0.15);
+        color: var(--color-primary);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .badge-success {
+        background: rgba(16, 185, 129, 0.15);
+        color: var(--color-accent);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .badge-warning {
+        background: rgba(245, 158, 11, 0.15);
+        color: var(--color-warning);
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    /* Confidence Meter */
+    .confidence-meter {
+        margin-bottom: 2rem;
+    }
+
+    .confidence-label-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .confidence-track {
+        height: 10px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .confidence-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+        width: 0%;
+        border-radius: 10px;
+        transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .description-text {
+        font-size: 1rem;
+        color: var(--text-secondary);
+        line-height: 1.6;
+        margin-bottom: 2rem;
+    }
+
+    /* Precautions list */
+    .precaution-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .precaution-item {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--border-color);
+        padding: 1rem;
+        border-radius: var(--border-radius-md);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 0.9rem;
+    }
+
+    .precaution-item i {
+        color: var(--color-accent);
+        font-size: 1.1rem;
+    }
+
+    /* Alternative Predictions Grid */
+    .alternatives-title {
+        font-size: 1rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .alternatives-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.25rem;
+    }
+
+    .alternative-card {
+        padding: 1.25rem;
+        border-radius: var(--border-radius-md);
+        background: rgba(255, 255, 255, 0.01);
+        border: 1px solid var(--border-color);
+    }
+
+    .alt-name {
+        font-size: 0.95rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--text-primary);
+    }
+
+    .alt-progress-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-bottom: 0.35rem;
+        color: var(--text-secondary);
+    }
+
+    /* History Sidebar */
+    .history-card {
+        position: sticky;
+        top: calc(var(--navbar-height) + 2rem);
+    }
+
+    .history-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        max-height: 500px;
+        overflow-y: auto;
+        padding-right: 0.25rem;
+    }
+
+    .history-item {
+        padding: 1rem;
+        border-radius: var(--border-radius-md);
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--border-color);
+        transition: var(--transition-fast);
+    }
+
+    .history-item:hover {
+        background: rgba(255, 255, 255, 0.04);
+        transform: translateX(2px);
+    }
+
+    .history-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-bottom: 0.4rem;
+    }
+
+    .history-disease {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.25rem;
+    }
+
+    .history-symptoms {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Animation Definitions */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-5px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes scaleUp {
+        from { transform: scale(0.9); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .text-accent {
+        color: var(--color-accent) !important;
+    }
+    .text-warning {
+        color: var(--color-warning) !important;
+    }
+    .text-danger {
+        color: var(--color-danger) !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-title-bar">
+    <h1>Disease Predictor</h1>
+    <p class="welcome-msg">Select your symptoms below to analyze potential health conditions using our ML models.</p>
+</div>
+
+<div class="predict-container">
+    <!-- Left Column: Input Panel & Results Panel -->
+    <div class="predict-main">
+        
+        <!-- Input Panel -->
+        <div class="panel-card glass-panel">
+            <h2 class="panel-title">
+                <i class="fa-solid fa-notes-medical" style="color: var(--color-primary);"></i>
+                Symptom Selection
+            </h2>
+            <p class="panel-subtitle">Select up to 15 symptoms that you are currently experiencing.</p>
+
+            <!-- Search Field -->
+            <div class="search-wrapper">
+                <div class="search-input-box">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" id="symptom-search" class="form-control" placeholder="Search symptoms (e.g. fever, headache, chills)..." autocomplete="off">
+                </div>
+                <!-- Suggestions Box -->
+                <div id="search-suggestions" class="suggestions-dropdown">
+                    <!-- Loaded dynamically -->
+                </div>
+            </div>
+
+            <!-- Tags Box -->
+            <div class="tags-container" id="selected-symptoms-container">
+                <div class="placeholder-tags" id="tags-placeholder">
+                    <i class="fa-solid fa-circle-info"></i>
+                    No symptoms selected. Start typing in the search bar above to add symptoms.
+                </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="actions-bar">
+                <button type="button" id="clear-btn" class="btn btn-secondary btn-action" disabled>
+                    <i class="fa-solid fa-trash-can"></i>
+                    <span>Clear All</span>
+                </button>
+                <button type="button" id="submit-btn" class="btn btn-primary btn-action" disabled>
+                    <span>Analyze Condition</span>
+                    <i class="fa-solid fa-brain"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Panel (Initially Hidden) -->
+        <div id="results-wrapper" class="results-section">
+            <div class="panel-card glass-panel results-card" id="results-card-element">
+                <div class="diagnosis-header">
+                    <div>
+                        <span class="panel-subtitle" style="margin-bottom: 0.25rem; display: block; text-transform: uppercase; font-weight: 700; font-size: 0.75rem; letter-spacing: 1px;">Primary Assessment</span>
+                        <h2 class="diagnosis-disease" id="result-disease">Disease Name</h2>
+                    </div>
+                    <span class="diagnosis-badge" id="result-badge-elem">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <span id="result-confidence-text">95.0% Confidence</span>
+                    </span>
+                </div>
+
+                <!-- Confidence Progress Meter -->
+                <div class="confidence-meter">
+                    <div class="confidence-label-row">
+                        <span>Predictive Confidence</span>
+                        <span id="result-meter-percentage">95.0%</span>
+                    </div>
+                    <div class="confidence-track">
+                        <div class="confidence-fill" id="result-meter-fill"></div>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <h3 class="panel-title" style="margin-bottom: 0.75rem;"><i class="fa-solid fa-circle-info" style="color: var(--color-primary);"></i> Condition Description</h3>
+                <p class="description-text" id="result-description">Description of the diagnosed disease goes here.</p>
+
+                <!-- Precautions -->
+                <h3 class="panel-title" style="margin-bottom: 0.75rem;"><i class="fa-solid fa-kit-medical" style="color: var(--color-accent);"></i> Recommended Care Steps</h3>
+                <div class="precaution-grid" id="result-precautions-container">
+                    <!-- Populated dynamically -->
+                </div>
+
+                <!-- Latency Log -->
+                <div style="display: flex; justify-content: flex-end; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 2rem;">
+                    <span><i class="fa-solid fa-gauge-high"></i> ML Inference Latency: <span id="result-latency">0.00ms</span></span>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid var(--border-color); margin-bottom: 2rem;">
+
+                <!-- Alternative Predictions -->
+                <h3 class="alternatives-title"><i class="fa-solid fa-network-wired" style="color: var(--color-primary);"></i> Alternative Possibilities</h3>
+                <div class="alternatives-grid" id="result-alternatives-container">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Right Column: Recent Predictions History -->
+    <div class="predict-sidebar">
+        <div class="panel-card glass-panel history-card">
+            <h2 class="panel-title" style="font-size: 1.15rem;">
+                <i class="fa-solid fa-clock-rotate-left" style="color: var(--color-primary);"></i>
+                Recent Predictions
+            </h2>
+            <p class="panel-subtitle" style="font-size: 0.8rem; margin-bottom: 1.25rem;">Your last 10 medical analyses.</p>
+
+            <div class="history-list" id="prediction-history-list">
+                {% for record in recent_predictions %}
+                    <div class="history-item">
+                        <div class="history-meta">
+                            <span><i class="fa-solid fa-calendar-day"></i> {{ record.created_at|date:"M d, Y H:i" }}</span>
+                            <span class="{% if record.confidence >= 75 %}text-accent{% elif record.confidence >= 45 %}text-warning{% else %}text-danger{% endif %}" style="font-weight: 700;">{{ record.confidence|floatformat:1 }}%</span>
+                        </div>
+                        <div class="history-disease">{{ record.prediction }}</div>
+                        <div class="history-symptoms" title="{{ record.symptoms|join:', ' }}">
+                            <strong>Symptoms:</strong> {{ record.symptoms|join:", " }}
+                        </div>
+                    </div>
+                {% empty %}
+                    <p style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 2rem 0;" id="history-empty-message">No prediction records found. Submit symptoms to start your logs.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ symptoms|json_script:"symptoms-data" }}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Load raw symptoms database from script tag
+        const rawSymptoms = JSON.parse(document.getElementById('symptoms-data').textContent);
+        
+        // State variables
+        const selectedSymptoms = new Set();
+        let highlightedSuggestionIndex = -1;
+        let activeSuggestions = [];
+
+        // DOM elements
+        const searchInput = document.getElementById('symptom-search');
+        const suggestionsBox = document.getElementById('search-suggestions');
+        const selectedContainer = document.getElementById('selected-symptoms-container');
+        const placeholderTags = document.getElementById('tags-placeholder');
+        const submitBtn = document.getElementById('submit-btn');
+        const clearBtn = document.getElementById('clear-btn');
+        
+        const resultsWrapper = document.getElementById('results-wrapper');
+        const resultsCard = document.getElementById('results-card-element');
+        const resultDisease = document.getElementById('result-disease');
+        const resultBadgeElem = document.getElementById('result-badge-elem');
+        const resultConfidenceText = document.getElementById('result-confidence-text');
+        const resultMeterPercentage = document.getElementById('result-meter-percentage');
+        const resultMeterFill = document.getElementById('result-meter-fill');
+        const resultDescription = document.getElementById('result-description');
+        const resultPrecautionsContainer = document.getElementById('result-precautions-container');
+        const resultLatency = document.getElementById('result-latency');
+        const resultAlternativesContainer = document.getElementById('result-alternatives-container');
+        const historyList = document.getElementById('prediction-history-list');
+        const historyEmptyMsg = document.getElementById('history-empty-message');
+
+        // Initial setup
+        updateUI();
+
+        // Search input handling
+        searchInput.addEventListener('input', () => {
+            const query = searchInput.value.trim().toLowerCase();
+            if (!query) {
+                closeSuggestions();
+                return;
+            }
+
+            // Filter out already selected symptoms
+            activeSuggestions = rawSymptoms.filter(item => 
+                (item.label.toLowerCase().includes(query) || item.value.toLowerCase().includes(query)) &&
+                !selectedSymptoms.has(item.value)
+            );
+
+            renderSuggestions(activeSuggestions);
+        });
+
+        // Search keydown navigation
+        searchInput.addEventListener('keydown', (e) => {
+            const items = suggestionsBox.querySelectorAll('.suggestion-item');
+            if (!items.length) return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                highlightedSuggestionIndex = (highlightedSuggestionIndex + 1) % items.length;
+                updateSuggestionHighlight(items);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                highlightedSuggestionIndex = (highlightedSuggestionIndex - 1 + items.length) % items.length;
+                updateSuggestionHighlight(items);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (highlightedSuggestionIndex >= 0 && highlightedSuggestionIndex < items.length) {
+                    items[highlightedSuggestionIndex].click();
+                } else if (items.length > 0) {
+                    items[0].click();
+                }
+            } else if (e.key === 'Escape') {
+                closeSuggestions();
+            }
+        });
+
+        // Close dropdown when clicking elsewhere
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
+                closeSuggestions();
+            }
+        });
+
+        // Suggestions Renderer
+        function renderSuggestions(list) {
+            suggestionsBox.innerHTML = '';
+            highlightedSuggestionIndex = -1;
+
+            if (!list.length) {
+                suggestionsBox.innerHTML = `<div style="padding:0.85rem 1.25rem; color:var(--text-muted); font-size:0.9rem;">No symptoms found matching query.</div>`;
+                suggestionsBox.style.display = 'block';
+                return;
+            }
+
+            list.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'suggestion-item';
+                div.innerHTML = `
+                    <span>${item.label}</span>
+                    <span class="symptom-code">${item.value}</span>
+                `;
+                div.addEventListener('click', () => {
+                    addSymptom(item);
+                });
+                suggestionsBox.appendChild(div);
+            });
+
+            suggestionsBox.style.display = 'block';
+        }
+
+        function updateSuggestionHighlight(items) {
+            items.forEach((item, idx) => {
+                if (idx === highlightedSuggestionIndex) {
+                    item.classList.add('highlighted');
+                    item.scrollIntoView({ block: 'nearest' });
+                } else {
+                    item.classList.remove('highlighted');
+                }
+            });
+        }
+
+        function closeSuggestions() {
+            suggestionsBox.innerHTML = '';
+            suggestionsBox.style.display = 'none';
+            highlightedSuggestionIndex = -1;
+            activeSuggestions = [];
+        }
+
+        // Add Symptom Tag
+        function addSymptom(item) {
+            if (selectedSymptoms.has(item.value)) return;
+            if (selectedSymptoms.size >= 15) {
+                alert("You can select a maximum of 15 symptoms.");
+                return;
+            }
+
+            selectedSymptoms.add(item.value);
+            
+            // Render Tag
+            const tag = document.createElement('div');
+            tag.className = 'tag-item';
+            tag.dataset.value = item.value;
+            tag.innerHTML = `
+                <span>${item.label}</span>
+                <i class="fa-solid fa-xmark tag-remove" title="Remove"></i>
+            `;
+            
+            tag.querySelector('.tag-remove').addEventListener('click', () => {
+                removeSymptom(item.value, tag);
+            });
+
+            // Insert before search wrap or directly in container
+            if (placeholderTags) {
+                placeholderTags.style.display = 'none';
+            }
+            selectedContainer.appendChild(tag);
+
+            searchInput.value = '';
+            closeSuggestions();
+            updateUI();
+            searchInput.focus();
+        }
+
+        // Remove Symptom Tag
+        function removeSymptom(value, tagElem) {
+            selectedSymptoms.delete(value);
+            tagElem.remove();
+            
+            if (selectedSymptoms.size === 0 && placeholderTags) {
+                placeholderTags.style.display = 'flex';
+            }
+            updateUI();
+        }
+
+        // Update button states
+        function updateUI() {
+            const hasSelection = selectedSymptoms.size > 0;
+            submitBtn.disabled = !hasSelection;
+            clearBtn.disabled = !hasSelection;
+        }
+
+        // Clear All button
+        clearBtn.addEventListener('click', () => {
+            selectedSymptoms.clear();
+            selectedContainer.querySelectorAll('.tag-item').forEach(tag => tag.remove());
+            if (placeholderTags) {
+                placeholderTags.style.display = 'flex';
+            }
+            updateUI();
+            resultsWrapper.style.display = 'none';
+        });
+
+        // Submit to Prediction API
+        submitBtn.addEventListener('click', async () => {
+            if (selectedSymptoms.size === 0) return;
+
+            // Set button loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `Analyzing... <i class="fa-solid fa-spinner fa-spin"></i>`;
+            
+            const payload = {
+                symptoms: Array.from(selectedSymptoms)
+            };
+
+            try {
+                const response = await fetch('/api/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || "An error occurred during prediction.");
+                }
+
+                renderResults(data);
+                prependHistoryRecord(data, payload.symptoms);
+
+            } catch (err) {
+                alert(err.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `Analyze Condition <i class="fa-solid fa-brain"></i>`;
+            }
+        });
+
+        // Render response data to results panel
+        function renderResults(data) {
+            // Set Disease Name
+            resultDisease.textContent = data.prediction;
+            
+            // Set Confidence Details
+            const confidence = data.confidence;
+            resultConfidenceText.textContent = `${confidence.toFixed(1)}% Confidence`;
+            resultMeterPercentage.textContent = `${confidence.toFixed(1)}%`;
+            resultMeterFill.style.width = `${confidence}%`;
+
+            // Reset Badge Theme classes
+            resultBadgeElem.className = 'diagnosis-badge';
+            resultsCard.className = 'panel-card glass-panel results-card';
+
+            if (confidence >= 75) {
+                resultBadgeElem.classList.add('badge-success');
+                resultsCard.classList.add('high-confidence');
+            } else if (confidence >= 45) {
+                resultBadgeElem.classList.add('badge-warning');
+                resultsCard.classList.add('low-confidence');
+            } else {
+                resultBadgeElem.classList.add('badge-primary');
+            }
+
+            // Description
+            resultDescription.textContent = data.description;
+
+            // Latency
+            resultLatency.textContent = `${data.latency_ms.toFixed(2)}ms`;
+
+            // Precautions
+            resultPrecautionsContainer.innerHTML = '';
+            if (data.precautions && data.precautions.length) {
+                data.precautions.forEach(prec => {
+                    const div = document.createElement('div');
+                    div.className = 'precaution-item';
+                    div.innerHTML = `
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>${prec}</span>
+                    `;
+                    resultPrecautionsContainer.appendChild(div);
+                });
+            } else {
+                resultPrecautionsContainer.innerHTML = `<p style="color:var(--text-muted); font-size:0.9rem;">No specific precautions found.</p>`;
+            }
+
+            // Alternative Predictions
+            resultAlternativesContainer.innerHTML = '';
+            // Exclude the primary prediction from alternative view (it's the first in top_predictions)
+            const alternatives = data.top_predictions.slice(1);
+            if (alternatives.length) {
+                alternatives.forEach(alt => {
+                    const card = document.createElement('div');
+                    card.className = 'alternative-card';
+                    card.innerHTML = `
+                        <div class="alt-name">${alt.disease}</div>
+                        <div class="alt-progress-row">
+                            <span>Likelihood</span>
+                            <span>${alt.confidence.toFixed(1)}%</span>
+                        </div>
+                        <div class="confidence-track" style="height:6px;">
+                            <div class="confidence-fill" style="width: ${alt.confidence}%;"></div>
+                        </div>
+                    `;
+                    resultAlternativesContainer.appendChild(card);
+                });
+            } else {
+                resultAlternativesContainer.innerHTML = `<p style="color:var(--text-muted); font-size:0.9rem;">No other high-probability conditions detected.</p>`;
+            }
+
+            // Show results section
+            resultsWrapper.style.display = 'block';
+            resultsWrapper.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Dynamically add prediction to the history log list on the right
+        function prependHistoryRecord(data, symptoms) {
+            if (historyEmptyMsg) {
+                historyEmptyMsg.remove();
+            }
+
+            // Create timestamp like "Jul 21, 2026 10:48"
+            const dateStr = new Date().toLocaleDateString('en-US', {
+                month: 'short',
+                day: '2-digit',
+                year: 'numeric'
+            }) + ' ' + new Date().toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            });
+
+            // Map symptoms value to labels for readable history
+            const symptomLabels = symptoms.map(val => {
+                const found = rawSymptoms.find(item => item.value === val);
+                return found ? found.label : val;
+            }).join(', ');
+
+            const confidenceClass = data.confidence >= 75 ? 'text-accent' : 
+                                  (data.confidence >= 45 ? 'text-warning' : 'text-danger');
+
+            const item = document.createElement('div');
+            item.className = 'history-item';
+            item.innerHTML = `
+                <div class="history-meta">
+                    <span><i class="fa-solid fa-calendar-day"></i> ${dateStr}</span>
+                    <span class="${confidenceClass}" style="font-weight: 700;">${data.confidence.toFixed(1)}%</span>
+                </div>
+                <div class="history-disease">${data.prediction}</div>
+                <div class="history-symptoms" title="${symptomLabels}">
+                    <strong>Symptoms:</strong> ${symptomLabels}
+                </div>
+            `;
+
+            // Insert at top of history container
+            if (historyList.firstChild) {
+                historyList.insertBefore(item, historyList.firstChild);
+            } else {
+                historyList.appendChild(item);
+            }
+
+            // Prune to maximum of 10 items
+            const items = historyList.querySelectorAll('.history-item');
+            if (items.length > 10) {
+                items[items.length - 1].remove();
+            }
+        }
+
+        // Helper to get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    });
+</script>
+{% endblock %}

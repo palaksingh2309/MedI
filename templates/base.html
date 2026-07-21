@@ -35,11 +35,10 @@
                         <span>My Profile</span>
                     </a>
                 </li>
-                <!-- Placeholder items for Sprints 2-4 -->
                 <li>
-                    <a href="#" class="menu-item-link" style="opacity: 0.5; cursor: not-allowed;" onclick="return false;">
+                    <a href="{% url 'dashboard:predict_page' %}" class="menu-item-link {% if request.resolver_match.view_name == 'dashboard:predict_page' %}active{% endif %}">
                         <i class="fa-solid fa-stethoscope"></i>
-                        <span>Disease Prediction (S2)</span>
+                        <span>Disease Prediction</span>
                     </a>
                 </li>
                 <li>

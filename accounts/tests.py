@@ -1,5 +1,8 @@
+# pyrefly: ignore [missing-import]
 from django.test import TestCase
+# pyrefly: ignore [missing-import]
 from django.urls import reverse
+# pyrefly: ignore [missing-import]
 from django.contrib.auth import get_user_model
 
 class CustomUserTests(TestCase):
