@@ -3,7 +3,201 @@
 {% block title %}Disease Prediction | MedIntel{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
+    /* Geolocation User Marker */
+    .user-pulse-marker {
+        width: 12px;
+        height: 12px;
+        background-color: #3b82f6;
+        border-radius: 50%;
+        border: 2px solid white;
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+        animation: pulseUser 1.6s infinite;
+    }
+    @keyframes pulseUser {
+        0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+        70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(59, 130, 246, 0); }
+        100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+    }
+
+    /* Tab Layout & Controls */
+    .rec-tab-headers {
+        display: flex;
+        border-bottom: 1px solid var(--border-color);
+        gap: 0.35rem;
+        margin-bottom: 1.25rem;
+        overflow-x: auto;
+        padding-bottom: 2px;
+    }
+
+    .rec-tab-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        padding: 0.5rem 0.95rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        border-radius: var(--border-radius-sm);
+        white-space: nowrap;
+        transition: var(--transition-fast);
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+
+    .rec-tab-btn:hover {
+        color: var(--text-primary);
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    .rec-tab-btn.active {
+        color: var(--color-primary);
+        background: rgba(5, 150, 105, 0.08);
+    }
+
+    .rec-tab-pane {
+        display: none;
+        animation: fadeIn 0.2s ease-out;
+    }
+
+    .rec-tab-pane.active {
+        display: block;
+    }
+
+    /* Medicine list details */
+    .med-details-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .med-detail-card {
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-md);
+    }
+
+    .med-header-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.4rem;
+    }
+
+    .med-badge-otc {
+        background: rgba(16, 185, 129, 0.12);
+        color: var(--color-accent);
+        padding: 0.15rem 0.45rem;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 700;
+    }
+
+    /* Diet List Layout */
+    .diet-split-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .diet-column {
+        padding: 1rem;
+        border-radius: var(--border-radius-md);
+        background: rgba(255, 255, 255, 0.01);
+        border: 1px solid var(--border-color);
+    }
+
+    .diet-column.recommended {
+        border-left: 3px solid var(--color-accent);
+    }
+
+    .diet-column.avoid {
+        border-left: 3px solid var(--color-danger);
+    }
+
+    .diet-item {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.85rem;
+        margin-bottom: 0.4rem;
+        color: var(--text-secondary);
+    }
+
+    /* Map Elements */
+    .map-wrapper {
+        border-radius: var(--border-radius-lg);
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+        box-shadow: var(--glass-shadow);
+        margin-bottom: 1rem;
+        position: relative;
+    }
+
+    #hospitals-map {
+        height: 280px;
+        width: 100%;
+        z-index: 1;
+    }
+
+    .hospitals-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+        max-height: 220px;
+        overflow-y: auto;
+        padding-right: 0.25rem;
+    }
+
+    .hospital-card {
+        padding: 0.75rem;
+        border-radius: var(--border-radius-md);
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--border-color);
+        transition: var(--transition-fast);
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 0.75rem;
+        cursor: pointer;
+    }
+
+    .hospital-card:hover {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: rgba(5, 150, 105, 0.2);
+    }
+
+    .hosp-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+    }
+
+    .hosp-name {
+        font-weight: 700;
+        color: var(--text-primary);
+        font-size: 0.85rem;
+    }
+
+    .hosp-detail {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+    }
+
+    .hosp-rating-badge {
+        background: rgba(245, 158, 11, 0.12);
+        color: var(--color-warning);
+        padding: 0.15rem 0.35rem;
+        border-radius: 6px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.15rem;
+    }
+
     /* CSS Grid Layout for Prediction Page */
     .predict-container {
         display: grid;
@@ -29,7 +223,7 @@
     }
 
     .panel-card:hover {
-        border-color: rgba(59, 130, 246, 0.2);
+        border-color: rgba(5, 150, 105, 0.2);
     }
 
     .panel-title {
@@ -104,7 +298,7 @@
     }
 
     .suggestion-item:hover, .suggestion-item.highlighted {
-        background: rgba(59, 130, 246, 0.12);
+        background: rgba(5, 150, 105, 0.12);
         color: var(--color-primary);
     }
 
@@ -127,8 +321,8 @@
     }
 
     .tag-item {
-        background: rgba(59, 130, 246, 0.1);
-        border: 1px solid rgba(59, 130, 246, 0.2);
+        background: rgba(5, 150, 105, 0.1);
+        border: 1px solid rgba(5, 150, 105, 0.2);
         color: var(--color-primary);
         padding: 0.4rem 0.85rem;
         border-radius: 50px;
@@ -179,7 +373,7 @@
 
     .results-card {
         border-left: 4px solid var(--color-primary);
-        background: linear-gradient(180deg, rgba(59, 130, 246, 0.05), transparent);
+        background: linear-gradient(180deg, rgba(5, 150, 105, 0.05), transparent);
     }
 
     .results-card.high-confidence {
@@ -217,9 +411,9 @@
     }
 
     .badge-primary {
-        background: rgba(59, 130, 246, 0.15);
+        background: rgba(5, 150, 105, 0.15);
         color: var(--color-primary);
-        border: 1px solid rgba(59, 130, 246, 0.3);
+        border: 1px solid rgba(5, 150, 105, 0.3);
     }
 
     .badge-success {
@@ -418,6 +612,28 @@
     <p class="welcome-msg">Select your symptoms below to analyze potential health conditions using our ML models.</p>
 </div>
 
+<!-- Medical Stepper Workflow -->
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; background: #ffffff; padding: 1rem 1.5rem; border-radius: var(--border-radius-md); border: 1px solid var(--border-color); box-shadow: var(--glass-shadow); max-width: 100%;">
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <span style="width: 28px; height: 28px; border-radius: 50%; background: var(--color-primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.85rem;">1</span>
+        <span style="font-weight: 600; color: var(--text-primary); font-size: 0.9rem;">Symptom Entry</span>
+    </div>
+    <div style="flex-grow: 1; height: 2px; background: var(--border-color); margin: 0 1rem; position: relative;">
+        <div id="step-1-2-line" style="position: absolute; left: 0; top: 0; bottom: 0; width: 0%; background: var(--color-primary); transition: width 0.3s ease;"></div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <span id="step-2-indicator" style="width: 28px; height: 28px; border-radius: 50%; background: #e2e8f0; color: #64748b; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.85rem; transition: all 0.3s ease;">2</span>
+        <span id="step-2-label" style="font-weight: 500; color: var(--text-muted); font-size: 0.9rem; transition: all 0.3s ease;">AI Diagnostics</span>
+    </div>
+    <div style="flex-grow: 1; height: 2px; background: var(--border-color); margin: 0 1rem; position: relative;">
+        <div id="step-2-3-line" style="position: absolute; left: 0; top: 0; bottom: 0; width: 0%; background: var(--color-accent); transition: width 0.3s ease;"></div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <span id="step-3-indicator" style="width: 28px; height: 28px; border-radius: 50%; background: #e2e8f0; color: #64748b; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.85rem; transition: all 0.3s ease;">3</span>
+        <span id="step-3-label" style="font-weight: 500; color: var(--text-muted); font-size: 0.9rem; transition: all 0.3s ease;">Care Guidelines</span>
+    </div>
+</div>
+
 <div class="predict-container">
     <!-- Left Column: Input Panel & Results Panel -->
     <div class="predict-main">
@@ -450,6 +666,31 @@
                 </div>
             </div>
 
+            <!-- Severity and Duration Row -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                <div>
+                    <label for="symptom-severity" style="display: block; font-size: 0.9rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.5rem;">
+                        <i class="fa-solid fa-gauge" style="color: var(--color-primary); margin-right: 0.25rem;"></i> Symptom Severity
+                    </label>
+                    <select id="symptom-severity" class="form-control" style="background: rgba(255, 255, 255, 0.02); color: var(--text-primary); border-radius: var(--border-radius-md); border: 1px solid var(--border-color); padding: 0.5rem;">
+                        <option value="mild" style="background: var(--bg-secondary); color: var(--text-primary);">Mild</option>
+                        <option value="moderate" style="background: var(--bg-secondary); color: var(--text-primary);">Moderate</option>
+                        <option value="severe" style="background: var(--bg-secondary); color: var(--text-primary);">Severe</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="symptom-duration" style="display: block; font-size: 0.9rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.5rem;">
+                        <i class="fa-solid fa-hourglass-half" style="color: var(--color-accent); margin-right: 0.25rem;"></i> Duration
+                    </label>
+                    <select id="symptom-duration" class="form-control" style="background: rgba(255, 255, 255, 0.02); color: var(--text-primary); border-radius: var(--border-radius-md); border: 1px solid var(--border-color); padding: 0.5rem;">
+                        <option value="1" style="background: var(--bg-secondary); color: var(--text-primary);">1 day</option>
+                        <option value="2" style="background: var(--bg-secondary); color: var(--text-primary);">2 days</option>
+                        <option value="4" style="background: var(--bg-secondary); color: var(--text-primary);">3-6 days</option>
+                        <option value="7" style="background: var(--bg-secondary); color: var(--text-primary);">7+ days (Persistent)</option>
+                    </select>
+                </div>
+            </div>
+
             <!-- Action buttons -->
             <div class="actions-bar">
                 <button type="button" id="clear-btn" class="btn btn-secondary btn-action" disabled>
@@ -465,37 +706,168 @@
 
         <!-- Results Panel (Initially Hidden) -->
         <div id="results-wrapper" class="results-section">
+            <!-- Emergency Warning Banner -->
+            <div id="emergency-warning-banner" style="display: none; align-items: center; gap: 0.75rem; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #ef4444; padding: 1rem 1.5rem; border-radius: var(--border-radius-md); margin-bottom: 1.5rem; font-size: 1.05rem; font-weight: 700; animation: pulseRed 2s infinite;">
+                <i class="fa-solid fa-circle-exclamation" style="font-size: 1.3rem;"></i>
+                <span id="emergency-warning-text"></span>
+            </div>
+
+            <!-- Insufficient Symptoms & Follow-Up Questions Panel -->
+            <div id="insufficient-symptoms-panel" style="display: none;">
+                <div class="panel-card glass-panel" style="background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.2); padding: 2rem; border-radius: var(--border-radius-lg); margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-comments-medical" style="color: #3b82f6;"></i>
+                        Additional Symptoms Required
+                    </h3>
+                    <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 1.5rem;">
+                        To provide an accurate diagnostic assessment, we need more context about what you're experiencing. Please answer the follow-up questions below:
+                    </p>
+                    <div id="follow-up-questions-container" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+
             <div class="panel-card glass-panel results-card" id="results-card-element">
-                <div class="diagnosis-header">
-                    <div>
-                        <span class="panel-subtitle" style="margin-bottom: 0.25rem; display: block; text-transform: uppercase; font-weight: 700; font-size: 0.75rem; letter-spacing: 1px;">Primary Assessment</span>
-                        <h2 class="diagnosis-disease" id="result-disease">Disease Name</h2>
-                    </div>
-                    <span class="diagnosis-badge" id="result-badge-elem">
-                        <i class="fa-solid fa-shield-halved"></i>
-                        <span id="result-confidence-text">95.0% Confidence</span>
-                    </span>
+                <!-- Low Coverage Warning Alert -->
+                <div id="result-warning-alert" style="display: none; align-items: center; gap: 0.75rem; background: #fffbeb; border: 1px solid #fcd34d; color: #78350f; padding: 0.85rem 1.15rem; border-radius: var(--border-radius-md); margin-bottom: 1.5rem; font-size: 0.9rem; font-weight: 500;">
+                    <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.1rem; color: #d97706;"></i>
+                    <span id="result-warning-text"></span>
                 </div>
 
-                <!-- Confidence Progress Meter -->
-                <div class="confidence-meter">
-                    <div class="confidence-label-row">
-                        <span>Predictive Confidence</span>
-                        <span id="result-meter-percentage">95.0%</span>
-                    </div>
-                    <div class="confidence-track">
-                        <div class="confidence-fill" id="result-meter-fill"></div>
-                    </div>
+                <!-- Overlap Explanation Notice -->
+                <div id="low-confidence-overlap-explanation" style="display: none; background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.2); padding: 1.25rem; border-radius: var(--border-radius-md); margin-bottom: 2rem; color: var(--text-secondary); font-size: 0.95rem; line-height: 1.5;">
+                    <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--color-warning); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-circle-question"></i> Overlapping Conditions Detected
+                    </h3>
+                    <span>Symptoms overlap across many illnesses. Because the confidence is below 75%, we are showing the top likely possibilities instead of forcing a single diagnosis.</span>
                 </div>
 
-                <!-- Description -->
-                <h3 class="panel-title" style="margin-bottom: 0.75rem;"><i class="fa-solid fa-circle-info" style="color: var(--color-primary);"></i> Condition Description</h3>
-                <p class="description-text" id="result-description">Description of the diagnosed disease goes here.</p>
+                <div id="primary-diagnosis-container">
+                    <div class="diagnosis-header">
+                        <div>
+                            <span class="panel-subtitle" style="margin-bottom: 0.25rem; display: block; text-transform: uppercase; font-weight: 700; font-size: 0.75rem; letter-spacing: 1px;">Primary Assessment</span>
+                            <h2 class="diagnosis-disease" id="result-disease">Disease Name</h2>
+                        </div>
+                        <span class="diagnosis-badge" id="result-badge-elem">
+                            <i class="fa-solid fa-shield-halved"></i>
+                            <span id="result-confidence-text">95.0% Confidence</span>
+                        </span>
+                    </div>
 
-                <!-- Precautions -->
-                <h3 class="panel-title" style="margin-bottom: 0.75rem;"><i class="fa-solid fa-kit-medical" style="color: var(--color-accent);"></i> Recommended Care Steps</h3>
-                <div class="precaution-grid" id="result-precautions-container">
-                    <!-- Populated dynamically -->
+                    <!-- Confidence Progress Meter -->
+                    <div class="confidence-meter">
+                        <div class="confidence-label-row">
+                            <span>Predictive Confidence</span>
+                            <span id="result-meter-percentage">95.0%</span>
+                        </div>
+                        <div class="confidence-track">
+                            <div class="confidence-fill" id="result-meter-fill"></div>
+                        </div>
+                    </div>
+
+                    <!-- Recommendation Tabs -->
+                    <div class="rec-tab-headers" id="diagnostics-tabs" style="display: none; margin-bottom: 1.5rem;">
+                        <button class="rec-tab-btn active" data-tab="diag-tab-overview"><i class="fa-solid fa-circle-info"></i> Overview</button>
+                        <button class="rec-tab-btn" data-tab="diag-tab-precautions"><i class="fa-solid fa-kit-medical"></i> Precautions</button>
+                        <button class="rec-tab-btn" data-tab="diag-tab-diet"><i class="fa-solid fa-apple-whole"></i> Diet</button>
+                        <button class="rec-tab-btn" data-tab="diag-tab-remedies"><i class="fa-solid fa-mug-hot"></i> Remedies</button>
+                        <button class="rec-tab-btn" data-tab="diag-tab-meds"><i class="fa-solid fa-pills"></i> Medicines</button>
+                        <button class="rec-tab-btn" data-tab="diag-tab-specialist"><i class="fa-solid fa-user-doctor"></i> Specialist</button>
+                        <button class="rec-tab-btn" data-tab="diag-tab-hospitals"><i class="fa-solid fa-map-location-dot"></i> Hospitals</button>
+                    </div>
+
+                    <!-- Tab Pane: Overview -->
+                    <div id="diag-tab-overview" class="rec-tab-pane active">
+                        <h3 class="panel-title" style="margin-bottom: 0.75rem;"><i class="fa-solid fa-clipboard-question" style="color: var(--color-primary);"></i> Condition Description</h3>
+                        <p class="description-text" id="result-description">Description of the diagnosed disease goes here.</p>
+                        
+                        <!-- Care Recommendation -->
+                        <div id="recommendation-card" style="background: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: var(--border-radius-lg); margin-bottom: 1.5rem;">
+                            <h3 style="font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.4rem;">
+                                <i class="fa-solid fa-circle-h" style="color: var(--color-primary);"></i> Care Recommendation
+                            </h3>
+                            <p id="recommendation-text" style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5; margin: 0;"></p>
+                        </div>
+                    </div>
+
+                    <!-- Tab Pane: Precautions -->
+                    <div id="diag-tab-precautions" class="rec-tab-pane">
+                        <h3 class="panel-title" style="margin-bottom: 0.75rem;"><i class="fa-solid fa-shield-heart" style="color: var(--color-accent);"></i> Recommended Care Steps</h3>
+                        <div class="precaution-grid" id="result-precautions-container"></div>
+                    </div>
+
+                    <!-- Tab Pane: Diet -->
+                    <div id="diag-tab-diet" class="rec-tab-pane">
+                        <div class="diet-split-grid" style="margin-top:0.5rem;">
+                            <div class="diet-column recommended">
+                                <h4 style="font-size: 0.9rem; font-weight: 700; color: var(--color-accent); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.4rem;">
+                                    <i class="fa-solid fa-circle-check"></i> Recommended Foods
+                                </h4>
+                                <div id="result-diet-recommended"></div>
+                            </div>
+                            <div class="diet-column avoid">
+                                <h4 style="font-size: 0.9rem; font-weight: 700; color: var(--color-danger); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.4rem;">
+                                    <i class="fa-solid fa-circle-xmark"></i> Foods to Avoid
+                                </h4>
+                                <div id="result-diet-avoid"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab Pane: Remedies -->
+                    <div id="diag-tab-remedies" class="rec-tab-pane">
+                        <h3 class="panel-title" style="margin-bottom: 0.75rem;"><i class="fa-solid fa-seedling" style="color: var(--color-primary);"></i> Home Care & Remedies</h3>
+                        <ul id="result-remedies-list" style="padding-left: 1.25rem; color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6; margin: 0.5rem 0 0 0;"></ul>
+                    </div>
+
+                    <!-- Tab Pane: Medicines -->
+                    <div id="diag-tab-meds" class="rec-tab-pane">
+                        <div style="background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: var(--border-radius-md); padding: 0.75rem 1rem; color: var(--color-warning); font-size: 0.8rem; font-weight: 500; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.05rem;"></i>
+                            <span>Disclaimers: Recommendations below are informational only and do not constitute professional advice or dosage prescriptions.</span>
+                        </div>
+
+                        <div id="result-prescription-alert" style="display:none; align-items:center; gap:0.5rem; background:rgba(239, 68, 68, 0.1); border:1px solid rgba(239, 68, 68, 0.3); color:#ef4444; border-radius:var(--border-radius-md); padding:1rem; font-weight:700; font-size:0.9rem; margin-bottom:1rem;">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <span id="result-prescription-alert-text"></span>
+                        </div>
+
+                        <div id="result-medicines-container" class="med-details-list"></div>
+                    </div>
+
+                    <!-- Tab Pane: Specialist -->
+                    <div id="diag-tab-specialist" class="rec-tab-pane">
+                        <div style="display:flex; gap:1rem; align-items:center; background:rgba(255,255,255,0.01); border:1px solid var(--border-color); border-radius:var(--border-radius-md); padding:1.25rem; margin-top:0.5rem;">
+                            <div style="font-size:2.2rem; color:var(--color-primary); background:rgba(5, 150, 105, 0.08); width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                                <i class="fa-solid fa-user-doctor"></i>
+                            </div>
+                            <div>
+                                <div style="font-size:0.75rem; text-transform:uppercase; font-weight:700; color:var(--text-muted); letter-spacing:0.5px; margin-bottom:2px;">Recommended Consult</div>
+                                <h4 id="result-specialist-name" style="font-size:1.1rem; font-weight:800; color:var(--text-primary); margin:0 0 2px 0;">Specialist Area</h4>
+                                <p id="result-specialist-desc" style="font-size:0.85rem; color:var(--text-secondary); margin:0; line-height:1.4;">Specialist description.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab Pane: Hospitals -->
+                    <div id="diag-tab-hospitals" class="rec-tab-pane">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                            <h3 class="panel-title" style="margin:0;"><i class="fa-solid fa-map-pin" style="color:var(--color-primary);"></i> Nearby Clinics Finder</h3>
+                            <button id="locate-me-predict-btn" class="btn btn-primary btn-sm" style="padding:0.4rem 0.8rem; font-size:0.8rem; display:flex; align-items:center; gap:0.25rem;">
+                                <i class="fa-solid fa-location-arrow"></i>
+                                <span>Find Facilities</span>
+                            </button>
+                        </div>
+
+                        <div class="map-wrapper">
+                            <div id="hospitals-map"></div>
+                        </div>
+
+                        <div id="predict-hospitals-list-container" class="hospitals-list">
+                            <p style="color:var(--text-muted); font-size:0.85rem; text-align:center; padding:1rem 0;">Click "Find Facilities" to list nearest medical clinics.</p>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Latency Log -->
@@ -503,12 +875,14 @@
                     <span><i class="fa-solid fa-gauge-high"></i> ML Inference Latency: <span id="result-latency">0.00ms</span></span>
                 </div>
 
-                <hr style="border: 0; border-top: 1px solid var(--border-color); margin-bottom: 2rem;">
+                <div id="alternative-possibilities-section">
+                    <hr style="border: 0; border-top: 1px solid var(--border-color); margin-bottom: 2rem;">
 
-                <!-- Alternative Predictions -->
-                <h3 class="alternatives-title"><i class="fa-solid fa-network-wired" style="color: var(--color-primary);"></i> Alternative Possibilities</h3>
-                <div class="alternatives-grid" id="result-alternatives-container">
-                    <!-- Populated dynamically -->
+                    <!-- Alternative Predictions -->
+                    <h3 class="alternatives-title"><i class="fa-solid fa-network-wired" style="color: var(--color-primary);"></i> Alternative Possibilities</h3>
+                    <div class="alternatives-grid" id="result-alternatives-container">
+                        <!-- Populated dynamically -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -728,6 +1102,24 @@
             const hasSelection = selectedSymptoms.size > 0;
             submitBtn.disabled = !hasSelection;
             clearBtn.disabled = !hasSelection;
+            
+            if (hasSelection) {
+                document.getElementById('step-1-2-line').style.width = '100%';
+                const s2Ind = document.getElementById('step-2-indicator');
+                const s2Lbl = document.getElementById('step-2-label');
+                s2Ind.style.background = 'var(--color-primary)';
+                s2Ind.style.color = 'white';
+                s2Lbl.style.color = 'var(--text-primary)';
+                s2Lbl.style.fontWeight = '600';
+            } else {
+                document.getElementById('step-1-2-line').style.width = '0%';
+                const s2Ind = document.getElementById('step-2-indicator');
+                const s2Lbl = document.getElementById('step-2-label');
+                s2Ind.style.background = '#e2e8f0';
+                s2Ind.style.color = '#64748b';
+                s2Lbl.style.color = 'var(--text-muted)';
+                s2Lbl.style.fontWeight = '500';
+            }
         }
 
         // Clear All button
@@ -739,7 +1131,30 @@
             }
             updateUI();
             resultsWrapper.style.display = 'none';
+            
+            // Reset Stepper
+            document.getElementById('step-1-2-line').style.width = '0%';
+            document.getElementById('step-2-3-line').style.width = '0%';
+            
+            const s2Ind = document.getElementById('step-2-indicator');
+            const s2Lbl = document.getElementById('step-2-label');
+            s2Ind.style.background = '#e2e8f0';
+            s2Ind.style.color = '#64748b';
+            s2Lbl.style.color = 'var(--text-muted)';
+            s2Lbl.style.fontWeight = '500';
+            
+            const s3Ind = document.getElementById('step-3-indicator');
+            const s3Lbl = document.getElementById('step-3-label');
+            s3Ind.style.background = '#e2e8f0';
+            s3Ind.style.color = '#64748b';
+            s3Lbl.style.color = 'var(--text-muted)';
+            s3Lbl.style.fontWeight = '500';
         });
+
+        // Leaflet map state for prediction view
+        let predictMap = null;
+        let predictMarkersGroup = null;
+        let predictUserMarker = null;
 
         // Submit to Prediction API
         submitBtn.addEventListener('click', async () => {
@@ -749,8 +1164,13 @@
             submitBtn.disabled = true;
             submitBtn.innerHTML = `Analyzing... <i class="fa-solid fa-spinner fa-spin"></i>`;
             
+            const severityVal = document.getElementById('symptom-severity').value;
+            const durationVal = document.getElementById('symptom-duration').value;
+            
             const payload = {
-                symptoms: Array.from(selectedSymptoms)
+                symptoms: Array.from(selectedSymptoms),
+                severity: severityVal,
+                duration: durationVal
             };
 
             try {
@@ -772,6 +1192,11 @@
                 renderResults(data);
                 prependHistoryRecord(data, payload.symptoms);
 
+                // If sufficient symptoms are entered, fetch S3 recommendations
+                if (data.sufficientSymptoms && data.prediction_id) {
+                    fetchRecommendations(data.prediction_id);
+                }
+
             } catch (err) {
                 alert(err.message);
             } finally {
@@ -780,80 +1205,436 @@
             }
         });
 
-        // Render response data to results panel
-        function renderResults(data) {
-            // Set Disease Name
-            resultDisease.textContent = data.prediction;
-            
-            // Set Confidence Details
-            const confidence = data.confidence;
-            resultConfidenceText.textContent = `${confidence.toFixed(1)}% Confidence`;
-            resultMeterPercentage.textContent = `${confidence.toFixed(1)}%`;
-            resultMeterFill.style.width = `${confidence}%`;
+        // Fetch Recommendations API
+        async function fetchRecommendations(predictionId) {
+            try {
+                const response = await fetch('/api/recommendations', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ prediction_id: predictionId })
+                });
 
-            // Reset Badge Theme classes
-            resultBadgeElem.className = 'diagnosis-badge';
-            resultsCard.className = 'panel-card glass-panel results-card';
+                const data = await response.json();
+                if (response.ok) {
+                    populateRecommendationTabs(data);
+                } else {
+                    console.error("Failed to load recommendations:", data.error);
+                }
+            } catch (err) {
+                console.error("Error loading recommendations:", err);
+            }
+        }
 
-            if (confidence >= 75) {
-                resultBadgeElem.classList.add('badge-success');
-                resultsCard.classList.add('high-confidence');
-            } else if (confidence >= 45) {
-                resultBadgeElem.classList.add('badge-warning');
-                resultsCard.classList.add('low-confidence');
+        // Populate S3 tabs with recommendation data
+        function populateRecommendationTabs(data) {
+            // Specialist Tab
+            document.getElementById('result-specialist-name').textContent = data.specialist;
+            document.getElementById('result-specialist-desc').textContent = data.specialist_description || "Consult this healthcare provider for specific advice, diagnosis, and support.";
+
+            // Diet Tab
+            const dietRec = document.getElementById('result-diet-recommended');
+            const dietAvoid = document.getElementById('result-diet-avoid');
+            dietRec.innerHTML = '';
+            dietAvoid.innerHTML = '';
+
+            const recFoods = data.diet.recommended || [];
+            if (recFoods.length) {
+                recFoods.forEach(food => {
+                    const div = document.createElement('div');
+                    div.className = 'diet-item';
+                    div.innerHTML = `<i class="fa-solid fa-square-check" style="color:var(--color-accent);"></i> <span>${food}</span>`;
+                    dietRec.appendChild(div);
+                });
             } else {
-                resultBadgeElem.classList.add('badge-primary');
+                dietRec.innerHTML = `<span style="color:var(--text-muted); font-size:0.8rem;">None documented</span>`;
             }
 
-            // Description
-            resultDescription.textContent = data.description;
+            const avoidFoods = data.diet.avoid || [];
+            if (avoidFoods.length) {
+                avoidFoods.forEach(food => {
+                    const div = document.createElement('div');
+                    div.className = 'diet-item';
+                    div.innerHTML = `<i class="fa-solid fa-square-xmark" style="color:var(--color-danger);"></i> <span>${food}</span>`;
+                    dietAvoid.appendChild(div);
+                });
+            } else {
+                dietAvoid.innerHTML = `<span style="color:var(--text-muted); font-size:0.8rem;">None documented</span>`;
+            }
+
+            // Remedies Tab
+            const remediesList = document.getElementById('result-remedies-list');
+            remediesList.innerHTML = '';
+            if (data.home_remedies && data.home_remedies.length) {
+                data.home_remedies.forEach(rem => {
+                    const li = document.createElement('li');
+                    li.textContent = rem;
+                    remediesList.appendChild(li);
+                });
+            } else {
+                remediesList.innerHTML = `<p style="color:var(--text-muted); font-size:0.8rem;">No specific home remedies documented.</p>`;
+            }
+
+            // Medicines Tab
+            const medicinesContainer = document.getElementById('result-medicines-container');
+            const prescriptionAlert = document.getElementById('result-prescription-alert');
+            const prescriptionAlertText = document.getElementById('result-prescription-alert-text');
+            
+            medicinesContainer.innerHTML = '';
+            if (data.prescription_warning) {
+                prescriptionAlertText.textContent = data.prescription_warning;
+                prescriptionAlert.style.display = 'flex';
+            } else {
+                prescriptionAlert.style.display = 'none';
+            }
+
+            if (data.medicines && data.medicines.length) {
+                data.medicines.forEach(m => {
+                    const card = document.createElement('div');
+                    card.className = 'med-detail-card';
+                    card.innerHTML = `
+                        <div class="med-header-row">
+                            <strong style="color:var(--text-primary); font-size:0.85rem;"><i class="fa-solid fa-capsules" style="color:var(--color-primary); margin-right:4px;"></i> ${m.medicine_name}</strong>
+                            <span class="med-badge-otc">${m.medicine_type}</span>
+                        </div>
+                        <p style="font-size:0.8rem; color:var(--text-secondary); margin:0 0 0.4rem 0; line-height:1.4;">${m.description}</p>
+                        <div style="font-size:0.75rem; color:var(--text-muted); background:rgba(0,0,0,0.15); padding:0.35rem 0.5rem; border-radius:4px;">
+                            <strong>Safety Instructions:</strong> ${m.precautions || 'Consult packaging or pharmacist for dosage rules.'}
+                        </div>
+                    `;
+                    medicinesContainer.appendChild(card);
+                });
+            } else if (!data.prescription_warning) {
+                medicinesContainer.innerHTML = `<p style="color:var(--text-muted); font-size:0.8rem;">No OTC drugs suggested for this condition.</p>`;
+            }
+        }
+
+        // Render response data to results panel
+        function renderResults(data) {
+            // Emergency Warning
+            const emergencyWarningBanner = document.getElementById('emergency-warning-banner');
+            const emergencyWarningText = document.getElementById('emergency-warning-text');
+            if (data.emergencyWarning) {
+                emergencyWarningText.textContent = data.emergencyWarning;
+                emergencyWarningBanner.style.display = 'flex';
+            } else {
+                emergencyWarningBanner.style.display = 'none';
+            }
+
+            const resultsCard = document.getElementById('results-card-element');
+            const insufficientSymptomsPanel = document.getElementById('insufficient-symptoms-panel');
+            
+            if (!data.sufficientSymptoms) {
+                // 1. Show Insufficient Symptoms panel and hide prediction content
+                insufficientSymptomsPanel.style.display = 'block';
+                
+                // Hide normal diagnosis elements inside card
+                document.getElementById('primary-diagnosis-container').style.display = 'none';
+                document.getElementById('diagnostics-tabs').style.display = 'none';
+                document.getElementById('low-confidence-overlap-explanation').style.display = 'none';
+                
+                // Populate follow-up questions
+                const questionsContainer = document.getElementById('follow-up-questions-container');
+                questionsContainer.innerHTML = '';
+                
+                if (data.followUpQuestions && data.followUpQuestions.length) {
+                    data.followUpQuestions.forEach(q => {
+                        const div = document.createElement('div');
+                        div.className = 'follow-up-card';
+                        div.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: var(--border-radius-md);';
+                        div.innerHTML = `
+                            <span style="font-size: 0.95rem; color: var(--text-primary); font-weight: 500;">${q.question}</span>
+                            <div style="display: flex; gap: 0.5rem;">
+                                 <button class="btn btn-primary btn-sm btn-yes" data-symptom="${q.symptom}" style="padding: 0.25rem 0.75rem; font-size: 0.85rem; border-radius: 4px; border: none; background: var(--color-primary); color: white; cursor: pointer;">Yes</button>
+                                 <button class="btn btn-secondary btn-sm btn-no" style="padding: 0.25rem 0.75rem; font-size: 0.85rem; border-radius: 4px; border: 1px solid var(--border-color); background: transparent; color: var(--text-secondary); cursor: pointer;">No</button>
+                            </div>
+                        `;
+                        
+                        // Add handlers
+                        div.querySelector('.btn-yes').addEventListener('click', (e) => {
+                            const symptomVal = e.target.dataset.symptom;
+                            const foundSymptom = rawSymptoms.find(item => item.value === symptomVal);
+                            if (foundSymptom) {
+                                addSymptom(foundSymptom);
+                                submitBtn.click();
+                            }
+                        });
+                        
+                        div.querySelector('.btn-no').addEventListener('click', () => {
+                            div.style.opacity = '0.5';
+                            div.querySelector('.btn-yes').disabled = true;
+                            div.querySelector('.btn-no').disabled = true;
+                        });
+                        
+                        questionsContainer.appendChild(div);
+                    });
+                } else {
+                    questionsContainer.innerHTML = `<p style="color:var(--text-muted); font-size:0.9rem;">No additional suggestions. Please try adding details manually.</p>`;
+                }
+            } else {
+                // 2. Sufficient symptoms are provided
+                insufficientSymptomsPanel.style.display = 'none';
+                document.getElementById('primary-diagnosis-container').style.display = 'block';
+                
+                // Show tabs header
+                document.getElementById('diagnostics-tabs').style.display = 'flex';
+                
+                // Default to Overview tab
+                document.querySelectorAll('#primary-diagnosis-container .rec-tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('#primary-diagnosis-container .rec-tab-pane').forEach(p => p.classList.remove('active'));
+                document.querySelector('#primary-diagnosis-container .rec-tab-btn[data-tab="diag-tab-overview"]').classList.add('active');
+                document.getElementById('diag-tab-overview').classList.add('active');
+
+                // Set recommendation text
+                document.getElementById('recommendation-text').textContent = data.recommendation;
+                
+                const confidence = data.predictionConfidence;
+                const isHighConfidence = confidence !== null && confidence > 75;
+                
+                if (isHighConfidence) {
+                    // Show primary diagnosis
+                    document.getElementById('primary-diagnosis-container').style.display = 'block';
+                    document.getElementById('low-confidence-overlap-explanation').style.display = 'none';
+                    
+                    // Set Disease Name
+                    resultDisease.textContent = data.prediction;
+                    
+                    // Set Confidence Details
+                    resultConfidenceText.textContent = `${confidence.toFixed(1)}% Confidence`;
+                    resultMeterPercentage.textContent = `${confidence.toFixed(1)}%`;
+                    resultMeterFill.style.width = `${confidence}%`;
+                    
+                    // Reset classes
+                    resultBadgeElem.className = 'diagnosis-badge badge-success';
+                    resultsCard.className = 'panel-card glass-panel results-card high-confidence';
+                    
+                    // Description & Precautions
+                    resultDescription.textContent = data.description;
+                    
+                    resultPrecautionsContainer.innerHTML = '';
+                    if (data.precautions && data.precautions.length) {
+                        data.precautions.forEach(prec => {
+                            const div = document.createElement('div');
+                            div.className = 'precaution-item';
+                            div.innerHTML = `
+                                <i class="fa-solid fa-circle-check"></i>
+                                <span>${prec}</span>
+                            `;
+                            resultPrecautionsContainer.appendChild(div);
+                        });
+                    } else {
+                        resultPrecautionsContainer.innerHTML = `<p style="color:var(--text-muted); font-size:0.9rem;">No specific precautions found.</p>`;
+                    }
+                } else {
+                    // Hide primary diagnosis name (it overlaps, so we don't force a diagnosis)
+                    document.getElementById('primary-diagnosis-container').style.display = 'block'; // Keep container but clear headers
+                    resultDisease.textContent = "Overlapping Diagnosis";
+                    resultConfidenceText.textContent = "Low Confidence";
+                    resultMeterPercentage.textContent = `${data.confidence.toFixed(1)}%`;
+                    resultMeterFill.style.width = `${data.confidence}%`;
+
+                    resultBadgeElem.className = 'diagnosis-badge badge-warning';
+                    resultsCard.className = 'panel-card glass-panel results-card low-confidence';
+
+                    resultDescription.textContent = data.description || "Symptoms overlap across many illnesses.";
+                    
+                    // Show overlapping explanation
+                    document.getElementById('low-confidence-overlap-explanation').style.display = 'block';
+                }
+                
+                // Show Alternative Predictions
+                resultAlternativesContainer.innerHTML = '';
+                const alternatives = isHighConfidence ? data.topPredictions.slice(1) : data.topPredictions;
+                
+                if (alternatives.length) {
+                    alternatives.forEach(alt => {
+                        const card = document.createElement('div');
+                        card.className = 'alternative-card';
+                        card.innerHTML = `
+                            <div class="alt-name">${alt.disease}</div>
+                            <div class="alt-progress-row">
+                                <span>Likelihood</span>
+                                <span>${alt.confidence.toFixed(1)}%</span>
+                            </div>
+                            <div class="confidence-track" style="height:6px;">
+                                <div class="confidence-fill" style="width: ${alt.confidence}%;"></div>
+                            </div>
+                            <p style="font-size:0.8rem; color:var(--text-muted); margin: 0.5rem 0 0 0; line-height: 1.4;">${alt.description}</p>
+                        `;
+                        resultAlternativesContainer.appendChild(card);
+                    });
+                } else {
+                    resultAlternativesContainer.innerHTML = `<p style="color:var(--text-muted); font-size:0.9rem;">No other high-probability conditions detected.</p>`;
+                }
+            }
 
             // Latency
             resultLatency.textContent = `${data.latency_ms.toFixed(2)}ms`;
 
-            // Precautions
-            resultPrecautionsContainer.innerHTML = '';
-            if (data.precautions && data.precautions.length) {
-                data.precautions.forEach(prec => {
-                    const div = document.createElement('div');
-                    div.className = 'precaution-item';
-                    div.innerHTML = `
-                        <i class="fa-solid fa-circle-check"></i>
-                        <span>${prec}</span>
-                    `;
-                    resultPrecautionsContainer.appendChild(div);
-                });
-            } else {
-                resultPrecautionsContainer.innerHTML = `<p style="color:var(--text-muted); font-size:0.9rem;">No specific precautions found.</p>`;
-            }
-
-            // Alternative Predictions
-            resultAlternativesContainer.innerHTML = '';
-            // Exclude the primary prediction from alternative view (it's the first in top_predictions)
-            const alternatives = data.top_predictions.slice(1);
-            if (alternatives.length) {
-                alternatives.forEach(alt => {
-                    const card = document.createElement('div');
-                    card.className = 'alternative-card';
-                    card.innerHTML = `
-                        <div class="alt-name">${alt.disease}</div>
-                        <div class="alt-progress-row">
-                            <span>Likelihood</span>
-                            <span>${alt.confidence.toFixed(1)}%</span>
-                        </div>
-                        <div class="confidence-track" style="height:6px;">
-                            <div class="confidence-fill" style="width: ${alt.confidence}%;"></div>
-                        </div>
-                    `;
-                    resultAlternativesContainer.appendChild(card);
-                });
-            } else {
-                resultAlternativesContainer.innerHTML = `<p style="color:var(--text-muted); font-size:0.9rem;">No other high-probability conditions detected.</p>`;
-            }
-
             // Show results section
             resultsWrapper.style.display = 'block';
             resultsWrapper.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+            // Complete Stepper
+            document.getElementById('step-2-3-line').style.width = '100%';
+            const s3Ind = document.getElementById('step-3-indicator');
+            const s3Lbl = document.getElementById('step-3-label');
+            s3Ind.style.background = 'var(--color-accent)';
+            s3Ind.style.color = 'white';
+            s3Lbl.style.color = 'var(--text-primary)';
+            s3Lbl.style.fontWeight = '600';
+        }
+
+        // --- Tab Header Clicking handler ---
+        document.querySelectorAll('#primary-diagnosis-container .rec-tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetTab = btn.dataset.tab;
+
+                // Deactivate all buttons in this tab group
+                document.querySelectorAll('#primary-diagnosis-container .rec-tab-btn').forEach(b => b.classList.remove('active'));
+                // Deactivate all panes
+                document.querySelectorAll('#primary-diagnosis-container .rec-tab-pane').forEach(p => p.classList.remove('active'));
+
+                // Activate selected
+                btn.classList.add('active');
+                const activePane = document.getElementById(targetTab);
+                activePane.classList.add('active');
+
+                // If Hospitals tab is activated, invalidate Leaflet size to render correctly
+                if (targetTab === 'diag-tab-hospitals' && predictMap) {
+                    setTimeout(() => {
+                        predictMap.invalidateSize();
+                    }, 100);
+                }
+            });
+        });
+
+        // --- Geolocation Finder for Prediction View ---
+        const findFacilitiesBtn = document.getElementById('locate-me-predict-btn');
+        const predictHospitalsContainer = document.getElementById('predict-hospitals-list-container');
+
+        findFacilitiesBtn.addEventListener('click', () => {
+            findFacilitiesBtn.disabled = true;
+            findFacilitiesBtn.querySelector('span').textContent = 'Searching...';
+            findFacilitiesBtn.querySelector('i').className = 'fa-solid fa-spinner fa-spin';
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        handlePredictLocationFound(lat, lon);
+                    },
+                    (error) => {
+                        alert("Could not retrieve exact location. Displaying local medical clinics near Center.");
+                        handlePredictLocationFound(23.25, 77.41);
+                    },
+                    { timeout: 8000, enableHighAccuracy: true }
+                );
+            } else {
+                alert("Geolocation is not supported by your browser. Using defaults.");
+                handlePredictLocationFound(23.25, 77.41);
+            }
+        });
+
+        async function handlePredictLocationFound(lat, lon) {
+            // Lazy load Map when button is clicked
+            if (!predictMap) {
+                predictMap = L.map('hospitals-map').setView([lat, lon], 13);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(predictMap);
+                predictMarkersGroup = L.layerGroup().addTo(predictMap);
+            } else {
+                predictMap.setView([lat, lon], 13);
+            }
+
+            // User pulse marker
+            if (predictUserMarker) {
+                predictMap.removeLayer(predictUserMarker);
+            }
+            const pulseIcon = L.divIcon({
+                className: 'user-pulse-icon',
+                html: '<div class="user-pulse-marker"></div>',
+                iconSize: [12, 12],
+                iconAnchor: [6, 6]
+            });
+            predictUserMarker = L.marker([lat, lon], { icon: pulseIcon }).addTo(predictMap).bindPopup("Your Location");
+
+            // Fetch hospitals from API
+            predictHospitalsContainer.innerHTML = `<div style="text-align:center; padding:1.5rem 0; color:var(--text-muted);"><i class="fa-solid fa-spinner fa-spin" style="font-size:1.2rem; margin-bottom:0.25rem; display:block;"></i> Finding nearby clinics...</div>`;
+            predictMarkersGroup.clearLayers();
+
+            try {
+                const response = await fetch('/api/hospitals', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ latitude: lat, longitude: lon })
+                });
+                
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || "Failed to retrieve clinics.");
+                }
+
+                renderPredictHospitals(data);
+            } catch (err) {
+                predictHospitalsContainer.innerHTML = `<p style="color:var(--color-danger); font-size:0.8rem; text-align:center; padding:1rem 0;">Error listing clinics: ${err.message}</p>`;
+            } finally {
+                findFacilitiesBtn.disabled = false;
+                findFacilitiesBtn.querySelector('span').textContent = 'Find Facilities';
+                findFacilitiesBtn.querySelector('i').className = 'fa-solid fa-location-arrow';
+            }
+        }
+
+        function renderPredictHospitals(hospitals) {
+            predictHospitalsContainer.innerHTML = '';
+            
+            if (!hospitals || hospitals.length === 0) {
+                predictHospitalsContainer.innerHTML = `<p style="color:var(--text-muted); font-size:0.8rem; text-align:center; padding:1.5rem 0;">No clinics detected within range.</p>`;
+                return;
+            }
+
+            hospitals.forEach((h, index) => {
+                // Marker
+                const marker = L.marker([h.latitude, h.longitude])
+                    .bindPopup(`
+                        <div style="font-family:sans-serif; color:var(--text-primary);">
+                            <strong style="font-size:0.85rem;">${h.name}</strong><br>
+                            <span style="font-size:0.75rem; color:#64748b;">Distance: ${h.distance}</span><br>
+                            <span style="font-size:0.75rem; color:#64748b;">Rating: ${h.rating} ⭐</span><br>
+                            <a href="https://www.google.com/maps/dir/?api=1&destination=${h.latitude},${h.longitude}" target="_blank" style="display:inline-block; margin-top:0.3rem; font-size:0.75rem; color:#059669; font-weight:bold; text-decoration:none;">Directions ↗</a>
+                        </div>
+                    `);
+                predictMarkersGroup.addLayer(marker);
+
+                // Card
+                const card = document.createElement('div');
+                card.className = 'hospital-card';
+                card.innerHTML = `
+                    <div class="hosp-info">
+                        <div class="hosp-name">${h.name}</div>
+                        <div class="hosp-detail">${h.distance} away | ${h.address}</div>
+                        <div class="hosp-detail">Phone: ${h.phone} | Hours: ${h.open_now}</div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:0.4rem;">
+                        <span class="hosp-rating-badge"><i class="fa-solid fa-star"></i> ${h.rating}</span>
+                    </div>
+                `;
+                
+                card.addEventListener('click', () => {
+                    predictMap.setView([h.latitude, h.longitude], 15);
+                    marker.openPopup();
+                });
+
+                predictHospitalsContainer.appendChild(card);
+            });
         }
 
         // Dynamically add prediction to the history log list on the right
@@ -879,17 +1660,21 @@
                 return found ? found.label : val;
             }).join(', ');
 
-            const confidenceClass = data.confidence >= 75 ? 'text-accent' : 
-                                  (data.confidence >= 45 ? 'text-warning' : 'text-danger');
+            // Use overall adjusted confidence or top prediction confidence
+            const confidenceVal = data.sufficientSymptoms ? (data.predictionConfidence !== null ? data.predictionConfidence : (data.topPredictions.length ? data.topPredictions[0].confidence : 0.0)) : 0.0;
+            const displayDiseaseName = data.sufficientSymptoms ? (data.prediction || (data.topPredictions.length ? `Possible: ${data.topPredictions[0].disease}` : 'Undetermined')) : 'Insufficient Symptoms';
+
+            const confidenceClass = confidenceVal >= 75 ? 'text-accent' : 
+                                  (confidenceVal >= 45 ? 'text-warning' : 'text-danger');
 
             const item = document.createElement('div');
             item.className = 'history-item';
             item.innerHTML = `
                 <div class="history-meta">
                     <span><i class="fa-solid fa-calendar-day"></i> ${dateStr}</span>
-                    <span class="${confidenceClass}" style="font-weight: 700;">${data.confidence.toFixed(1)}%</span>
+                    <span class="${confidenceClass}" style="font-weight: 700;">${confidenceVal.toFixed(1)}%</span>
                 </div>
-                <div class="history-disease">${data.prediction}</div>
+                <div class="history-disease">${displayDiseaseName}</div>
                 <div class="history-symptoms" title="${symptomLabels}">
                     <strong>Symptoms:</strong> ${symptomLabels}
                 </div>

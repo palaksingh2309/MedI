@@ -1,0 +1,94 @@
+[
+  {
+    "specialist": "Allergist / General Physician",
+    "description": "Specialist medical practitioner in the field of Allergist."
+  },
+  {
+    "specialist": "Allergist / Immunologist",
+    "description": "Specialist medical practitioner in the field of Allergist."
+  },
+  {
+    "specialist": "Cardiologist",
+    "description": "A doctor who specializes in diagnosing and treating diseases of the cardiovascular system."
+  },
+  {
+    "specialist": "Cardiologist / General Physician",
+    "description": "Specialist medical practitioner in the field of Cardiologist."
+  },
+  {
+    "specialist": "Dermatologist",
+    "description": "A medical practitioner qualified to diagnose and treat skin disorders."
+  },
+  {
+    "specialist": "ENT Specialist / Neurologist",
+    "description": "Specialist medical practitioner in the field of ENT Specialist."
+  },
+  {
+    "specialist": "Endocrinologist",
+    "description": "A medical doctor who specializes in diagnosing and treating hormone-related conditions."
+  },
+  {
+    "specialist": "Endocrinologist / General Physician",
+    "description": "Specialist medical practitioner in the field of Endocrinologist."
+  },
+  {
+    "specialist": "Gastroenterologist",
+    "description": "A medical practitioner who specializes in the diagnosis and treatment of disorders of the digestive system."
+  },
+  {
+    "specialist": "Gastroenterologist / Hepatologist",
+    "description": "Specialist medical practitioner in the field of Gastroenterologist."
+  },
+  {
+    "specialist": "General Physician",
+    "description": "A primary care physician who provides preventive care and treats a wide variety of common medical conditions."
+  },
+  {
+    "specialist": "General Physician / Pediatrician",
+    "description": "Specialist medical practitioner in the field of General Physician."
+  },
+  {
+    "specialist": "General Surgeon / Gastroenterologist",
+    "description": "Specialist medical practitioner in the field of General Surgeon."
+  },
+  {
+    "specialist": "Infectious Disease Specialist",
+    "description": "A doctor specializing in the diagnosis, control and treatment of infections."
+  },
+  {
+    "specialist": "Infectious Disease Specialist / General Physician",
+    "description": "Specialist medical practitioner in the field of Infectious Disease Specialist."
+  },
+  {
+    "specialist": "Neurologist",
+    "description": "A medical specialist in the diagnosis and treatment of disorders of the nervous system."
+  },
+  {
+    "specialist": "Neurologist / Neurosurgeon",
+    "description": "Specialist medical practitioner in the field of Neurologist."
+  },
+  {
+    "specialist": "Orthopedist / Neurologist",
+    "description": "Specialist medical practitioner in the field of Orthopedist."
+  },
+  {
+    "specialist": "Pulmonologist",
+    "description": "A medical doctor who diagnoses and treats conditions that affect the respiratory system."
+  },
+  {
+    "specialist": "Pulmonologist / Infectious Disease Specialist",
+    "description": "Specialist medical practitioner in the field of Pulmonologist."
+  },
+  {
+    "specialist": "Rheumatologist / Orthopedist",
+    "description": "Specialist medical practitioner in the field of Rheumatologist."
+  },
+  {
+    "specialist": "Urologist / General Physician",
+    "description": "Specialist medical practitioner in the field of Urologist."
+  },
+  {
+    "specialist": "Vascular Surgeon / Dermatologist",
+    "description": "Specialist medical practitioner in the field of Vascular Surgeon."
+  }
+]

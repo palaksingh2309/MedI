@@ -1,0 +1,293 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedWise AI | Your Health Companion</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Styles -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}?v=2.0">
+</head>
+<body style="background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%); min-height: 100vh;">
+
+    <!-- Splash Screen Overlay -->
+    <div id="splash-overlay">
+        <div class="splash-logo-container">
+            <div class="splash-logo-ring">
+                <i class="fa-solid fa-heart-pulse"></i>
+            </div>
+            <div class="splash-logo-pulse"></div>
+        </div>
+        <h1 class="splash-title">MedWise AI</h1>
+        <p class="splash-subtitle">Personalized Clinical Health Companion</p>
+        <div class="splash-progress-container">
+            <div class="splash-progress-bar" id="splash-progress"></div>
+        </div>
+        <div class="splash-quote-card" id="splash-quote">
+            "Your health is your greatest wealth."
+        </div>
+    </div>
+
+    <!-- Navigation Header -->
+    <nav class="landing-navbar">
+        <a href="#" class="brand-link" style="font-size: 1.5rem;">
+            <span class="brand-logo-icon"><i class="fa-solid fa-heart-pulse"></i></span>
+            <span>MedWise AI</span>
+        </a>
+        
+        <ul class="landing-nav-links">
+            <li><a href="#features" class="landing-nav-link">Features</a></li>
+            <li><a href="#quotes" class="landing-nav-link">Insights</a></li>
+            {% if user.is_authenticated %}
+                <li><a href="{% url 'dashboard:index' %}" class="btn btn-primary" style="padding: 0.6rem 1.5rem;">Dashboard <i class="fa-solid fa-arrow-right"></i></a></li>
+            {% else %}
+                <li><a href="{% url 'accounts:login' %}" class="landing-nav-link" style="font-weight: 600;">Sign In</a></li>
+                <li><a href="{% url 'accounts:signup' %}" class="btn btn-primary" style="padding: 0.6rem 1.5rem;">Get Started</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="landing-hero">
+        <div class="hero-text-content">
+            <h1>Intelligent Healthcare Made Calm & Trustworthy</h1>
+            <p>
+                Experience a premium clinical companion designed to monitor biometrics, compute health indexes, summarize medical reports, and offer safe, certified guidance.
+            </p>
+            <div class="hero-actions">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard:index' %}" class="btn btn-primary">Go to Dashboard <i class="fa-solid fa-arrow-right"></i></a>
+                {% else %}
+                    <a href="{% url 'accounts:signup' %}" class="btn btn-primary">Get Started Now</a>
+                {% endif %}
+                <a href="#features" class="btn btn-secondary">Learn More</a>
+            </div>
+        </div>
+        
+        <div class="hero-visual-wrapper">
+            <!-- Modern Medical Vector Grid Graphics -->
+            <svg class="hero-main-illustration" viewBox="0 0 500 450" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Outer glow rings -->
+                <circle cx="250" cy="225" r="180" fill="url(#paint0_radial)" fill-opacity="0.6"/>
+                <circle cx="250" cy="225" r="130" stroke="rgba(16, 185, 129, 0.12)" stroke-width="2" stroke-dasharray="10 5"/>
+                <!-- Medical Shield Grid -->
+                <path d="M250 80C170 80 140 110 140 190C140 290 250 370 250 370C250 370 360 290 360 190C360 110 330 80 250 80Z" fill="white" stroke="rgba(16, 185, 129, 0.2)" stroke-width="4" style="filter: drop-shadow(0 15px 30px rgba(5,150,105,0.06));"/>
+                <!-- Heart pulse in center -->
+                <path d="M190 225H220L228 200L238 260L248 180L258 245L264 215L270 225H310" stroke="#059669" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                <!-- DNA Helix representation -->
+                <circle cx="160" cy="140" r="10" fill="#10b981"/>
+                <circle cx="340" cy="140" r="10" fill="#10b981"/>
+                <line x1="170" y1="140" x2="330" y2="140" stroke="rgba(16, 185, 129, 0.15)" stroke-width="3"/>
+                <!-- Gradient definition -->
+                <defs>
+                    <radialGradient id="paint0_radial" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(250 225) rotate(90) scale(180)">
+                        <stop stop-color="#a7f3d0" stop-opacity="0.3"/>
+                        <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+                    </radialGradient>
+                </defs>
+            </svg>
+
+            <!-- Floating Medical Icons -->
+            <div class="floating-icon float-1" title="Stethoscope"><i class="fa-solid fa-stethoscope"></i></div>
+            <div class="floating-icon float-2" title="Heart"><i class="fa-solid fa-heart"></i></div>
+            <div class="floating-icon float-3" title="DNA"><i class="fa-solid fa-dna"></i></div>
+            <div class="floating-icon float-4" title="Medical Cross"><i class="fa-solid fa-notes-medical"></i></div>
+            <div class="floating-icon float-5" title="ECG"><i class="fa-solid fa-wave-square"></i></div>
+        </div>
+    </header>
+
+    <!-- Health Quotes Section -->
+    <section class="quotes-section" id="quotes">
+        <div class="quotes-container">
+            <div class="quote-icon"><i class="fa-solid fa-quote-left"></i></div>
+            <div id="quote-carousel">
+                <div class="quote-slide">
+                    <p class="quote-text" id="carousel-text">"Your health is your greatest wealth."</p>
+                    <p style="color: var(--color-primary); font-weight: 600;">MedWise Wisdom</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Grid Section -->
+    <section class="features-section" id="features">
+        <div class="section-header">
+            <h2>Comprehensive Healthcare Features</h2>
+            <p>Explore tools built to support diagnostic insights and promote healthy choices.</p>
+        </div>
+        
+        <div class="features-grid">
+            <!-- Feature 1 -->
+            <div class="feature-card">
+                <div class="feature-icon-box"><i class="fa-solid fa-brain"></i></div>
+                <h3>AI Disease Prediction</h3>
+                <p>Submit active symptoms to our machine learning models to identify potential health conditions with confidence scores.</p>
+            </div>
+            
+            <!-- Feature 2 -->
+            <div class="feature-card">
+                <div class="feature-icon-box"><i class="fa-solid fa-robot"></i></div>
+                <h3>AI Medical Chatbot</h3>
+                <p>Interact with our smart conversational medical assistant to receive guidance and triage advice safely.</p>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="feature-card">
+                <div class="feature-icon-box"><i class="fa-solid fa-pills"></i></div>
+                <h3>Medicine Information</h3>
+                <p>Read about over-the-counter remedies, warnings, purpose descriptions, and potential side effects.</p>
+            </div>
+
+            <!-- Feature 4 -->
+            <div class="feature-card">
+                <div class="feature-icon-box"><i class="fa-solid fa-map-location-dot"></i></div>
+                <h3>Nearby Hospitals</h3>
+                <p>Find nearby clinical centers and emergency departments based on geographic coordinates with map integration.</p>
+            </div>
+
+            <!-- Feature 5 -->
+            <div class="feature-card">
+                <div class="feature-icon-box"><i class="fa-solid fa-file-medical"></i></div>
+                <h3>Medical Report Summarizer</h3>
+                <p>Upload hematology and diagnostic reports. Our clinical summaries isolate core metrics instantly.</p>
+            </div>
+
+            <!-- Feature 6 -->
+            <div class="feature-card">
+                <div class="feature-icon-box"><i class="fa-solid fa-timeline"></i></div>
+                <h3>Health Timeline</h3>
+                <p>Keep a chronological journal of symptoms, prediction records, weight changes, and report logs.</p>
+            </div>
+
+            <!-- Feature 7 -->
+            <div class="feature-card">
+                <div class="feature-icon-box"><i class="fa-solid fa-chart-line"></i></div>
+                <h3>Health Analytics</h3>
+                <p>Track metrics over time using clean multi-axis visual telemetry charts for water, steps, sleep, and weight.</p>
+            </div>
+
+            <!-- Feature 8 -->
+            <div class="feature-card">
+                <div class="feature-icon-box"><i class="fa-solid fa-heart-pulse"></i></div>
+                <h3>Daily Wellness Tracking</h3>
+                <p>Log your vitals, calorie inputs, stress thresholds, and hydration levels daily for health tracking.</p>
+            </div>
+
+            <!-- Feature 9 -->
+            <div class="feature-card">
+                <div class="feature-icon-box"><i class="fa-solid fa-shield-halved"></i></div>
+                <h3>Secure Medical Records</h3>
+                <p>All biometric profile metrics and uploaded records are guarded securely with encryption.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="medwise-footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <h3>MedWise AI</h3>
+                <p>
+                    A premium digital health companion providing predictive diagnostics, metrics logs, and clinical record analysis in a calming layout.
+                </p>
+                <div class="footer-socials">
+                    <a href="#" class="social-icon"><i class="fa-brands fa-twitter"></i></a>
+                    <a href="#" class="social-icon"><i class="fa-brands fa-linkedin-in"></i></a>
+                    <a href="#" class="social-icon"><i class="fa-brands fa-github"></i></a>
+                </div>
+            </div>
+            
+            <div class="footer-links">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#features">Platform Features</a></li>
+                    <li><a href="#quotes">Calming Quotes</a></li>
+                    <li><a href="{% url 'accounts:login' %}">Sign In Portal</a></li>
+                    <li><a href="{% url 'accounts:signup' %}">Create Account</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-links">
+                <h4>Legal & Contact</h4>
+                <ul>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Support Center</a></li>
+                    <li><a href="mailto:support@medwise.ai">Contact Clinical Team</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <span>&copy; 2026 MedWise AI Companion. All rights reserved.</span>
+            <span>Version 2.0.1 &bull; Clinical Assist Node</span>
+        </div>
+        
+        <div class="disclaimer-text">
+            <strong>Medical Disclaimer:</strong> MedWise AI is an informational decision-support software application. The predictions, suggestions, and reports generated are not professional medical diagnoses or prescribing treatments. Always consult with a licensed physician or emergency services if you feel unwell or are undergoing a health crisis.
+        </div>
+    </footer>
+
+    <!-- Script loaders for splash animation and carousel -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Quotes rotation list
+            const quotes = [
+                "Your health is your greatest wealth.",
+                "Prevention is better than cure.",
+                "Small healthy choices make a big difference.",
+                "A healthy outside starts from the inside.",
+                "Health is not valued until sickness comes.",
+                "Take care of your body. It's the only place you have to live.",
+                "Healthy habits today build a stronger tomorrow."
+            ];
+
+            // 1. Splash Screen Loader Progress Simulation
+            const splashOverlay = document.getElementById("splash-overlay");
+            const progressBar = document.getElementById("splash-progress");
+            const splashQuote = document.getElementById("splash-quote");
+            
+            // Check if splash has already been shown in this session
+            if (sessionStorage.getItem("splash_shown")) {
+                splashOverlay.style.display = "none";
+            } else {
+                // Pick a random quote for splash screen
+                splashQuote.innerText = `"${quotes[Math.floor(Math.random() * quotes.length)]}"`;
+                
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += 4;
+                    progressBar.style.width = `${progress}%`;
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        setTimeout(() => {
+                            splashOverlay.classList.add("fade-out");
+                            sessionStorage.setItem("splash_shown", "true");
+                            setTimeout(() => {
+                                splashOverlay.style.display = "none";
+                            }, 600);
+                        }, 200);
+                    }
+                }, 80);
+            }
+
+            // 2. Health Quotes Section Carousel
+            const carouselText = document.getElementById("carousel-text");
+            let quoteIndex = 0;
+            
+            setInterval(() => {
+                carouselText.style.opacity = 0;
+                setTimeout(() => {
+                    quoteIndex = (quoteIndex + 1) % quotes.length;
+                    carouselText.innerText = `"${quotes[quoteIndex]}"`;
+                    carouselText.style.opacity = 1;
+                }, 400);
+            }, 6000);
+        });
+    </script>
+</body>
+</html>

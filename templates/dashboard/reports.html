@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Medical Report Summarizer | MedWise AI{% endblock %}
+
+{% block content %}
+<div class="reports-container" style="max-width: 900px; margin: 0 auto;">
+    <div class="dashboard-title-bar">
+        <h1>Medical Report Summarizer</h1>
+        <p class="welcome-msg">Upload hematology or diagnostic reports for clinical summaries</p>
+    </div>
+
+    <!-- Upload section -->
+    <div class="panel-card glass-panel" style="padding: 2.5rem; text-align: center; border: 2px dashed var(--border-color); background: rgba(5,150,105,0.02); margin-bottom: 2rem;">
+        <form method="post" enctype="multipart/form-data" id="report-upload-form" onsubmit="showProcessingState()">
+            {% csrf_token %}
+            
+            <div id="upload-static-ui">
+                <div style="font-size: 3rem; color: var(--color-primary); margin-bottom: 1.5rem;">
+                    <i class="fa-solid fa-file-pdf"></i>
+                </div>
+                <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-primary);">
+                    Select Medical Report to Analyze
+                </h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+                    Supports PDF documents or lab images (Hematology, Kidney panels, Glycemia logs)
+                </p>
+                
+                <label for="report_file_input" class="btn btn-primary" style="margin: 0 auto; cursor: pointer;">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Choose Document File
+                    <input type="file" name="report_file" id="report_file_input" accept=".pdf,image/*" style="display: none;" onchange="handleFileSelected(this)">
+                </label>
+                <div id="file-name-display" style="margin-top: 1rem; font-size: 0.9rem; font-weight: 600; color: var(--color-primary); display: none;"></div>
+                <button type="submit" id="submit-btn" class="btn btn-secondary" style="margin-top: 1rem; display: none;">
+                    Analyze Document <i class="fa-solid fa-circle-check"></i>
+                </button>
+            </div>
+
+            <!-- Loading Spinner Skeleton -->
+            <div id="upload-processing-ui" style="display: none;">
+                <div style="font-size: 3rem; color: var(--color-primary); margin-bottom: 1.5rem;">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i>
+                </div>
+                <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-primary);">
+                    Parsing Biometric Variables...
+                </h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted);">
+                    Structuring hematology data, checking limits, and generating suggestions.
+                </p>
+                <!-- Simulated progress lines -->
+                <div style="max-width: 300px; margin: 1.5rem auto 0; display:flex; flex-direction:column; gap:0.5rem;">
+                    <div style="height:6px; background:#e2e8f0; border-radius:3px; overflow:hidden;">
+                        <div style="height:100%; width: 70%; background:var(--color-primary); animation: loading-shimmer 1.5s infinite linear;"></div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- History list section -->
+    <div class="dashboard-title-bar" style="margin-top: 3rem;">
+        <h2>Processed Reports ({{ reports|length }})</h2>
+        <p class="welcome-msg">Your historical diagnostic summaries</p>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        {% for report in reports %}
+            <div class="panel-card glass-panel" style="margin-bottom: 0;">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1rem;">
+                    <div>
+                        <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary);">
+                            <i class="fa-solid fa-file-medical" style="color: var(--color-primary); margin-right: 4px;"></i> {{ report.file.name|slice:"16:"|default:report.file.name }}
+                        </h4>
+                        <span style="font-size: 0.75rem; color: var(--text-muted);"><i class="fa-regular fa-calendar"></i> Uploaded: {{ report.created_at|date:"M d, Y @ H:i" }}</span>
+                    </div>
+                    <a href="{{ report.file.url }}" class="btn btn-secondary" style="padding: 0.4rem 1rem; font-size: 0.8rem;" target="_blank">
+                        <i class="fa-solid fa-file-arrow-down"></i> View Raw File
+                    </a>
+                </div>
+
+                <!-- Structured Clinical Summary Box -->
+                <div style="background: rgba(5,150,105,0.03); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: 10px; font-size: 0.92rem; color: var(--text-secondary); line-height: 1.6; white-space: pre-line;">
+                    {{ report.summary }}
+                </div>
+            </div>
+        {% empty %}
+            <div class="panel-card glass-panel" style="text-align: center; padding: 3rem 2rem; color: var(--text-muted);">
+                <i class="fa-solid fa-notes-medical" style="font-size: 2.5rem; opacity: 0.3; margin-bottom: 1rem;"></i>
+                <p>No medical reports uploaded yet. Upload a PDF to trigger clinical diagnostics analysis.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    @keyframes loading-shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(150%); }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function handleFileSelected(input) {
+        const display = document.getElementById("file-name-display");
+        const btn = document.getElementById("submit-btn");
+        
+        if (input.files && input.files[0]) {
+            display.innerText = "📄 File Selected: " + input.files[0].name;
+            display.style.display = "block";
+            btn.style.display = "inline-flex";
+        } else {
+            display.style.display = "none";
+            btn.style.display = "none";
+        }
+    }
+
+    function showProcessingState() {
+        document.getElementById("upload-static-ui").style.display = "none";
+        document.getElementById("upload-processing-ui").style.display = "block";
+    }
+</script>
+{% endblock %}

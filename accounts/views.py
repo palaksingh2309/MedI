@@ -33,19 +33,56 @@ class CustomLogoutView(LogoutView):
         messages.info(request, "You have been logged out.")
         return super().dispatch(request, *args, **kwargs)
 
+from .forms import CustomUserCreationForm, UserProfileForm, HealthProfileForm
+from dashboard.models import HealthProfile
+
 class ProfileView(LoginRequiredMixin, View):
     template_name = 'accounts/profile.html'
 
     def get(self, request):
-        form = UserProfileForm(instance=request.user)
-        return render(request, self.template_name, {'form': form})
+        profile, _ = HealthProfile.objects.get_or_create(user=request.user)
+        user_form = UserProfileForm(instance=request.user)
+        health_form = HealthProfileForm(instance=profile)
+        
+        active_tab = request.GET.get('tab', 'personal')
+        
+        return render(request, self.template_name, {
+            'user_form': user_form,
+            'health_form': health_form,
+            'active_tab': active_tab,
+            'profile': profile
+        })
 
     def post(self, request):
-        form = UserProfileForm(request.POST, request.FILES, instance=request.user)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Your profile has been updated successfully!")
-            return redirect('accounts:profile')
-        else:
-            messages.error(request, "There was an error updating your profile.")
-        return render(request, self.template_name, {'form': form})
+        profile, _ = HealthProfile.objects.get_or_create(user=request.user)
+        user_form = UserProfileForm(instance=request.user)
+        health_form = HealthProfileForm(instance=profile)
+        
+        form_type = request.POST.get('form_type')
+        active_tab = 'personal'
+        
+        if form_type == 'personal':
+            user_form = UserProfileForm(request.POST, request.FILES, instance=request.user)
+            if user_form.is_valid():
+                user_form.save()
+                messages.success(request, "Account settings updated successfully!")
+                return redirect('/accounts/profile/?tab=personal')
+            else:
+                messages.error(request, "Error updating account settings.")
+                active_tab = 'personal'
+        elif form_type == 'health':
+            health_form = HealthProfileForm(request.POST, instance=profile)
+            if health_form.is_valid():
+                health_form.save()
+                messages.success(request, "Clinical Health Profile updated successfully!")
+                return redirect('/accounts/profile/?tab=health')
+            else:
+                messages.error(request, "Error updating Health Profile metrics.")
+                active_tab = 'health'
+                
+        return render(request, self.template_name, {
+            'user_form': user_form,
+            'health_form': health_form,
+            'active_tab': active_tab,
+            'profile': profile
+        })

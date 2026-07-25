@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}AI Medical Chatbot | MedWise AI{% endblock %}
+
+{% block content %}
+<div class="chatbot-container" style="max-width: 900px; margin: 0 auto;">
+    <div class="dashboard-title-bar">
+        <h1>AI Medical Chatbot</h1>
+        <p class="welcome-msg">Calming, clinical advice from MedWise AI triage</p>
+    </div>
+
+    <!-- Alert disclaimer -->
+    <div style="background: rgba(5, 150, 105, 0.05); border: 1px solid var(--border-color); color: var(--text-primary); padding: 1rem 1.25rem; border-radius: 12px; margin-bottom: 2rem; font-size: 0.88rem; display: flex; gap: 0.75rem; line-height: 1.5;">
+        <i class="fa-solid fa-user-doctor" style="font-size: 1.25rem; margin-top: 0.1rem; color: var(--color-primary);"></i>
+        <span>
+            <strong>Disclaimer:</strong> This digital assistant provides general clinical information and first-aid recommendations. It is not an emergency hotline, nor is it a licensed physician. For severe diagnostics, please consult a clinic.
+        </span>
+    </div>
+
+    <!-- Chat card window -->
+    <div class="panel-card glass-panel" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; border-radius: var(--border-radius-lg);">
+        
+        <!-- Header -->
+        <div style="background: linear-gradient(135deg, #064e3b, #022c22); padding: 1.25rem 2rem; display: flex; align-items: center; gap: 1rem; color: white;">
+            <div style="width: 42px; height: 42px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; color: #10b981;">
+                <i class="fa-solid fa-robot"></i>
+            </div>
+            <div>
+                <h3 style="color: white; font-size: 1.1rem; font-weight: 700; margin-bottom: 0.15rem;">MedWise AI Assessor</h3>
+                <span style="font-size: 0.75rem; color: #a7f3d0; font-weight: 500; display:flex; align-items:center; gap:0.25rem;"><span style="width: 7px; height: 7px; background: #10b981; border-radius: 50%; display: inline-block;"></span> Clinical Assistant Node Online</span>
+            </div>
+        </div>
+
+        <!-- Chat history container -->
+        <div class="chat-window" id="chat-scroller">
+            <!-- If empty, show welcome bubble -->
+            {% if not chat_history %}
+                <div class="chat-bubble assistant">
+                    <div class="chat-bubble-inner">
+                        👋 Hello! I am your MedWise AI Clinical Assessor. I can assist in triaging mild symptoms (like fever, cough, headaches) and suggesting precautions. What symptoms or questions are on your mind?
+                    </div>
+                    <span class="chat-bubble-meta">MedWise AI Assessor</span>
+                </div>
+            {% endif %}
+
+            {% for chat in chat_history %}
+                <div class="chat-bubble {{ chat.role }}">
+                    <div class="chat-bubble-inner">
+                        {{ chat.content|linebreaksbr }}
+                    </div>
+                    <span class="chat-bubble-meta">{% if chat.role == 'user' %}You{% else %}MedWise AI Assessor{% endif %}</span>
+                </div>
+            {% endfor %}
+            
+            <!-- Floating Loader indicator (hidden by default) -->
+            <div class="chat-bubble assistant" id="chat-loader" style="display: none;">
+                <div class="chat-bubble-inner" style="background: #e2e8f0; display: flex; gap: 0.35rem; align-items: center; padding: 0.75rem 1rem;">
+                    <span style="width: 8px; height: 8px; background: #64748b; border-radius: 50%; display:inline-block; animation: typing-dot 1.4s infinite ease-in-out;"></span>
+                    <span style="width: 8px; height: 8px; background: #64748b; border-radius: 50%; display:inline-block; animation: typing-dot 1.4s infinite ease-in-out; animation-delay: 0.2s;"></span>
+                    <span style="width: 8px; height: 8px; background: #64748b; border-radius: 50%; display:inline-block; animation: typing-dot 1.4s infinite ease-in-out; animation-delay: 0.4s;"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Triage Tags -->
+        <div style="background: #f8fafc; padding: 1rem 1.5rem 0.5rem; border-top: 1px solid var(--border-color); display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
+            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Quick Symptoms:</span>
+            <button class="btn btn-secondary" style="padding: 0.35rem 0.85rem; font-size: 0.78rem; border-radius: 20px;" onclick="sendQuickMessage('I have a high fever.')">🌡️ Fever</button>
+            <button class="btn btn-secondary" style="padding: 0.35rem 0.85rem; font-size: 0.78rem; border-radius: 20px;" onclick="sendQuickMessage('I have a severe headache.')">🤕 Headache</button>
+            <button class="btn btn-secondary" style="padding: 0.35rem 0.85rem; font-size: 0.78rem; border-radius: 20px;" onclick="sendQuickMessage('I have a dry cough.')">🤧 Cold & Cough</button>
+            <button class="btn btn-secondary" style="padding: 0.35rem 0.85rem; font-size: 0.78rem; border-radius: 20px; color: var(--color-danger); border-color: rgba(239,68,68,0.25);" onclick="sendQuickMessage('I have severe chest pain and trouble breathing.')">🚨 Chest Pain</button>
+        </div>
+
+        <!-- Input Box -->
+        <div class="chat-input-bar">
+            <input type="text" id="chat-input" class="chat-input-field" placeholder="Describe symptoms or ask clinical questions..." onkeydown="handleEnter(event)">
+            <button class="btn btn-primary" style="padding: 0 1.5rem;" onclick="postMessage()">
+                <span>Send</span>
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes typing-dot {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-4px); }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const scroller = document.getElementById("chat-scroller");
+    const input = document.getElementById("chat-input");
+    const loader = document.getElementById("chat-loader");
+
+    // Auto-scroll chat history bottom
+    function scrollBottom() {
+        scroller.scrollTop = scroller.scrollHeight;
+    }
+    scrollBottom();
+
+    function handleEnter(e) {
+        if (e.key === 'Enter') {
+            postMessage();
+        }
+    }
+
+    function sendQuickMessage(text) {
+        input.value = text;
+        postMessage();
+    }
+
+    function postMessage() {
+        const text = input.value.trim();
+        if (!text) return;
+
+        // 1. Append User bubble
+        appendBubble('user', text);
+        input.value = '';
+        scrollBottom();
+
+        // 2. Show typing loader
+        loader.style.display = 'flex';
+        scrollBottom();
+
+        // 3. POST AJAX
+        fetch('{% url "dashboard:chatbot" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ message: text })
+        })
+        .then(res => res.json())
+        .then(data => {
+            // Hide loader
+            loader.style.display = 'none';
+            
+            if (data.response) {
+                appendBubble('assistant', data.response);
+            } else if (data.error) {
+                appendBubble('assistant', "⚠️ Error: " + data.error);
+            }
+            scrollBottom();
+        })
+        .catch(err => {
+            loader.style.display = 'none';
+            appendBubble('assistant', "⚠️ Communication failure. Check server connectivity.");
+            scrollBottom();
+        });
+    }
+
+    function appendBubble(role, text) {
+        const bubble = document.createElement('div');
+        bubble.className = `chat-bubble ${role}`;
+        
+        // Convert double newlines to paragraph or breaks
+        const formatted = text.replace(/\n/g, '<br>');
+        
+        bubble.innerHTML = `
+            <div class="chat-bubble-inner">
+                ${formatted}
+            </div>
+            <span class="chat-bubble-meta">${role === 'user' ? 'You' : 'MedWise AI Assessor'}</span>
+        `;
+        // Insert before loader
+        scroller.insertBefore(bubble, loader);
+    }
+</script>
+{% endblock %}

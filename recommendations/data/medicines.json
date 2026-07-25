@@ -1,0 +1,106 @@
+[
+  {
+    "disease_name": "(vertigo) Paroymsal  Positional Vertigo",
+    "medicine_name": "Meclizine",
+    "medicine_type": "OTC",
+    "otc": true,
+    "description": "Antihistamine used to treat or prevent dizziness and motion sickness.",
+    "precautions": "May cause significant drowsiness. Avoid driving or operating machinery."
+  },
+  {
+    "disease_name": "Acne",
+    "medicine_name": "Benzoyl Peroxide 2.5% Gel",
+    "medicine_type": "OTC",
+    "otc": true,
+    "description": "Topical treatment to kill acne-causing bacteria and help clear skin.",
+    "precautions": "Can cause skin dryness and peeling. Avoid contact with eyes and bleached fabrics."
+  },
+  {
+    "disease_name": "Allergy",
+    "medicine_name": "Cetirizine",
+    "medicine_type": "OTC",
+    "otc": true,
+    "description": "Antihistamine for relief of allergy symptoms like watery eyes, runny nose, and itching.",
+    "precautions": "Avoid alcohol. May cause drowsiness in some users."
+  },
+  {
+    "disease_name": "Arthritis",
+    "medicine_name": "Ibuprofen",
+    "medicine_type": "OTC",
+    "otc": true,
+    "description": "Nonsteroidal anti-inflammatory drug (NSAID) to reduce joint pain and swelling.",
+    "precautions": "Take with food to prevent stomach upset. Avoid long-term unmonitored use."
+  },
+  {
+    "disease_name": "Common Cold",
+    "medicine_name": "Paracetamol",
+    "medicine_type": "OTC",
+    "otc": true,
+    "description": "Temporary fever reduction and relief of mild to moderate body aches.",
+    "precautions": "Avoid exceeding the recommended label dosage. Do not take with other paracetamol-containing products."
+  },
+  {
+    "disease_name": "Common Cold",
+    "medicine_name": "Loratadine",
+    "medicine_type": "OTC",
+    "otc": true,
+    "description": "Non-drowsy antihistamine for runny nose and sneezing.",
+    "precautions": "May cause dry mouth or mild drowsiness in rare cases."
+  },
+  {
+    "disease_name": "Dimorphic hemmorhoids(piles)",
+    "medicine_name": "Witch Hazel Pads",
+    "medicine_type": "OTC",
+    "otc": true,
+    "description": "Soothing pads to relieve local itching and discomfort associated with hemorrhoids.",
+    "precautions": "Use after bowel movements or up to 6 times daily."
+  },
+  {
+    "disease_name": "Fungal infection",
+    "medicine_name": "Clotrimazole 1% Cream",
+    "medicine_type": "OTC",
+    "otc": true,
+    "description": "Topical antifungal cream to treat athlete's foot, jock itch, and ringworm.",
+    "precautions": "Apply to affected area as directed. For external use only."
+  },
+  {
+    "disease_name": "GERD",
+    "medicine_name": "Calcium Carbonate (Antacid)",
+    "medicine_type": "OTC",
+    "otc": true,
+    "description": "Fast-acting relief from heartburn and acid indigestion.",
+    "precautions": "Do not use for more than 2 weeks without consulting a doctor."
+  },
+  {
+    "disease_name": "GERD",
+    "medicine_name": "Famotidine",
+    "medicine_type": "OTC",
+    "otc": true,
+    "description": "H2 blocker that reduces acid production in the stomach.",
+    "precautions": "Take 15-60 minutes before eating food that causes heartburn."
+  },
+  {
+    "disease_name": "Migraine",
+    "medicine_name": "Ibuprofen",
+    "medicine_type": "OTC",
+    "otc": true,
+    "description": "Pain reliever to reduce migraine-associated headache pain.",
+    "precautions": "Take at the onset of migraine symptoms. Do not overuse."
+  },
+  {
+    "disease_name": "Osteoarthristis",
+    "medicine_name": "Acetaminophen",
+    "medicine_type": "OTC",
+    "otc": true,
+    "description": "Pain reliever for mild osteoarthritis joint pain.",
+    "precautions": "Strictly adhere to dosage limits to avoid liver damage."
+  },
+  {
+    "disease_name": "Urinary tract infection",
+    "medicine_name": "Phenazopyridine",
+    "medicine_type": "OTC",
+    "otc": true,
+    "description": "Urinary tract analgesic to relieve burning, pain, and urgency.",
+    "precautions": "Informational: This does NOT cure the infection. You must consult a doctor for prescription antibiotics."
+  }
+]

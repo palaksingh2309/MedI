@@ -1,0 +1,708 @@
+{% extends 'base.html' %}
+
+{% block title %}Medicines & Maps | MedWise AI{% endblock %}
+
+{% block extra_css %}
+<!-- Leaflet.js Map CDN -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+    .med-maps-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        align-items: start;
+        margin-top: 1rem;
+    }
+
+    @media (max-width: 1024px) {
+        .med-maps-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Map container styling */
+    .map-wrapper {
+        border-radius: var(--border-radius-lg);
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+        box-shadow: var(--glass-shadow);
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+
+    #hospitals-map {
+        height: 380px;
+        width: 100%;
+        z-index: 1;
+    }
+
+    .locate-btn-overlay {
+        position: absolute;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        z-index: 10;
+    }
+
+    /* Hospital item listing */
+    .hospitals-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        max-height: 340px;
+        overflow-y: auto;
+        padding-right: 0.25rem;
+    }
+
+    .hospital-card {
+        padding: 1rem;
+        border-radius: var(--border-radius-md);
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--border-color);
+        transition: var(--transition-fast);
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .hospital-card:hover {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: rgba(5, 150, 105, 0.2);
+    }
+
+    .hosp-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .hosp-name {
+        font-weight: 700;
+        color: var(--text-primary);
+        font-size: 0.95rem;
+    }
+
+    .hosp-detail {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+    }
+
+    .hosp-rating-badge {
+        background: rgba(245, 158, 11, 0.12);
+        color: var(--color-warning);
+        padding: 0.25rem 0.5rem;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        white-space: nowrap;
+    }
+
+    /* Knowledge base lookup styling */
+    .kb-lookup-wrapper {
+        min-height: 450px;
+    }
+
+    .kb-results-box {
+        display: none;
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    /* Tabbed interface for recommendations */
+    .rec-tab-headers {
+        display: flex;
+        border-bottom: 1px solid var(--border-color);
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+        overflow-x: auto;
+        padding-bottom: 2px;
+    }
+
+    .rec-tab-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        padding: 0.5rem 1rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        border-radius: var(--border-radius-sm);
+        white-space: nowrap;
+        transition: var(--transition-fast);
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .rec-tab-btn:hover {
+        color: var(--text-primary);
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    .rec-tab-btn.active {
+        color: var(--color-primary);
+        background: rgba(5, 150, 105, 0.08);
+    }
+
+    .rec-tab-pane {
+        display: none;
+        animation: fadeIn 0.2s ease-out;
+    }
+
+    .rec-tab-pane.active {
+        display: block;
+    }
+
+    /* Styled medicine details list */
+    .med-details-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .med-detail-card {
+        padding: 1.25rem;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-md);
+        position: relative;
+    }
+
+    .med-header-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+    }
+
+    .med-badge-otc {
+        background: rgba(16, 185, 129, 0.12);
+        color: var(--color-accent);
+        padding: 0.15rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    /* Diet List Layout */
+    .diet-split-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    @media (max-width: 576px) {
+        .diet-split-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .diet-column {
+        padding: 1.25rem;
+        border-radius: var(--border-radius-md);
+        background: rgba(255, 255, 255, 0.01);
+        border: 1px solid var(--border-color);
+    }
+
+    .diet-column.recommended {
+        border-left: 3px solid var(--color-accent);
+    }
+
+    .diet-column.avoid {
+        border-left: 3px solid var(--color-danger);
+    }
+
+    .diet-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+        color: var(--text-secondary);
+    }
+
+    /* Pulse Geolocation Indicator */
+    .user-pulse-marker {
+        width: 14px;
+        height: 14px;
+        background-color: #3b82f6;
+        border-radius: 50%;
+        border: 2px solid white;
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+        animation: pulseUser 1.6s infinite;
+    }
+
+    @keyframes pulseUser {
+        0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+        70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(59, 130, 246, 0); }
+        100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-title-bar">
+    <h1>Medicines & Maps Finder</h1>
+    <p class="welcome-msg">Explore our comprehensive OTC medicines directory, safety precautions, and locate nearby medical services.</p>
+</div>
+
+<div class="med-maps-grid">
+    <!-- Left Column: Hospital Map and List -->
+    <div class="main-column-left">
+        <div class="panel-card glass-panel" style="margin-bottom: 2rem;">
+            <h2 class="panel-title" style="margin-bottom: 0.5rem;">
+                <i class="fa-solid fa-map-location-dot" style="color: var(--color-primary);"></i>
+                Nearby Clinic & Hospital Locator
+            </h2>
+            <p class="panel-subtitle">Share your location to view coordinates and fetch the closest medical clinics, pharmacies, and doctors.</p>
+            
+            <div class="map-wrapper">
+                <div id="hospitals-map"></div>
+                <div class="locate-btn-overlay">
+                    <button id="locate-btn" class="btn btn-primary" style="box-shadow: var(--glass-shadow); padding: 0.5rem 1rem; font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-location-crosshairs"></i>
+                        <span>Locate Me</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- List container -->
+            <h3 class="panel-title" style="font-size: 1rem; margin-bottom: 0.75rem;"><i class="fa-solid fa-list-check" style="color: var(--color-accent); font-size: 0.95rem;"></i> Found Facilities</h3>
+            <div id="hospitals-list-container" class="hospitals-list">
+                <p style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 2rem 0;">
+                    Click "Locate Me" to query and list local health facilities on the map.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Medical Knowledge Base Lookup -->
+    <div class="sidebar-column-right">
+        <div class="panel-card glass-panel kb-lookup-wrapper">
+            <h2 class="panel-title" style="margin-bottom: 0.5rem;">
+                <i class="fa-solid fa-book-medical" style="color: var(--color-primary);"></i>
+                Disease Knowledge Base & OTC Guide
+            </h2>
+            <p class="panel-subtitle">Select a condition below to explore recommended specialists, safe precautions, diet regulations, and OTC medicine details.</p>
+
+            <div style="margin-bottom: 1.5rem;">
+                <label for="disease-search-dropdown" style="display:block; font-size:0.85rem; font-weight:600; color:var(--text-secondary); margin-bottom:0.5rem;">Select Diagnosis / Illness</label>
+                <select id="disease-search-dropdown" class="form-control" style="background: rgba(255, 255, 255, 0.02); color: var(--text-primary); border-radius: var(--border-radius-md); border: 1px solid var(--border-color); padding: 0.65rem;">
+                    <option value="" style="background: var(--bg-secondary); color: var(--text-primary);">-- Select Condition --</option>
+                    {% for disease in diseases %}
+                        <option value="{{ disease.disease_name }}" style="background: var(--bg-secondary); color: var(--text-primary);">{{ disease.disease_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Empty State placeholder -->
+            <div id="kb-empty-placeholder" style="text-align: center; padding: 4rem 1.5rem; color: var(--text-muted);">
+                <i class="fa-solid fa-file-medical" style="font-size: 3.5rem; color: rgba(255, 255, 255, 0.05); margin-bottom: 1rem; display: block;"></i>
+                <span>Choose a disease from the dropdown above to display safety precautions and OTC drug profiles.</span>
+            </div>
+
+            <!-- Results Section (Initially Hidden) -->
+            <div id="kb-results-box" class="kb-results-box">
+                <div style="background: rgba(5, 150, 105, 0.04); border-radius: var(--border-radius-md); padding: 1.25rem; border: 1px solid rgba(5, 150, 105, 0.15); margin-bottom: 1.5rem;">
+                    <h3 id="kb-disease-title" style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.35rem;">Disease Name</h3>
+                    <p id="kb-disease-desc" style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin: 0;">Description goes here.</p>
+                </div>
+
+                <!-- Tabs header -->
+                <div class="rec-tab-headers">
+                    <button class="rec-tab-btn active" data-tab="tab-care"><i class="fa-solid fa-kit-medical"></i> Care & Precautions</button>
+                    <button class="rec-tab-btn" data-tab="tab-diet"><i class="fa-solid fa-apple-whole"></i> Diet Guide</button>
+                    <button class="rec-tab-btn" data-tab="tab-meds"><i class="fa-solid fa-pills"></i> OTC Medicines</button>
+                    <button class="rec-tab-btn" data-tab="tab-spec"><i class="fa-solid fa-user-doctor"></i> Specialist</button>
+                </div>
+
+                <!-- Tab: Care & Precautions -->
+                <div id="tab-care" class="rec-tab-pane active">
+                    <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--text-primary);">Standard Precautions & Care Steps:</h4>
+                    <div id="kb-precautions-list" class="precaution-grid">
+                        <!-- Populated dynamically -->
+                    </div>
+                    <h4 style="font-size: 0.95rem; font-weight: 700; margin-top: 1.5rem; margin-bottom: 0.75rem; color: var(--text-primary);">Suggested Home Remedies:</h4>
+                    <ul id="kb-remedies-list" style="padding-left: 1.25rem; margin: 0; color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6;">
+                        <!-- Populated dynamically -->
+                    </ul>
+                </div>
+
+                <!-- Tab: Diet Guide -->
+                <div id="tab-diet" class="rec-tab-pane">
+                    <div class="diet-split-grid">
+                        <div class="diet-column recommended">
+                            <h4 style="font-size: 0.9rem; font-weight: 700; color: var(--color-accent); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.4rem;">
+                                <i class="fa-solid fa-circle-check"></i> Recommended Foods
+                            </h4>
+                            <div id="kb-diet-recommended"></div>
+                        </div>
+                        <div class="diet-column avoid">
+                            <h4 style="font-size: 0.9rem; font-weight: 700; color: var(--color-danger); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.4rem;">
+                                <i class="fa-solid fa-circle-xmark"></i> Foods to Avoid
+                            </h4>
+                            <div id="kb-diet-avoid"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab: OTC Medicines -->
+                <div id="tab-meds" class="rec-tab-pane">
+                    <div style="background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: var(--border-radius-md); padding: 0.75rem 1rem; color: var(--color-warning); font-size: 0.8rem; font-weight: 500; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.05rem;"></i>
+                        <span>Disclaimers: Recommendations below are informational only and do not constitute professional advice or dosage prescriptions.</span>
+                    </div>
+
+                    <div id="kb-prescription-alert" style="display:none; align-items:center; gap:0.5rem; background:rgba(239, 68, 68, 0.1); border:1px solid rgba(239, 68, 68, 0.3); color:#ef4444; border-radius:var(--border-radius-md); padding:1rem; font-weight:700; font-size:0.9rem; margin-bottom:1rem;">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span id="kb-prescription-alert-text"></span>
+                    </div>
+
+                    <div id="kb-medicines-container" class="med-details-list">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Tab: Specialist -->
+                <div id="tab-spec" class="rec-tab-pane">
+                    <div style="display:flex; gap:1rem; align-items:center; background:rgba(255,255,255,0.01); border:1px solid var(--border-color); border-radius:var(--border-radius-md); padding:1.25rem; margin-bottom:1rem;">
+                        <div style="font-size:2.5rem; color:var(--color-primary); background:rgba(5, 150, 105, 0.08); width:64px; height:64px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                            <i class="fa-solid fa-user-md"></i>
+                        </div>
+                        <div>
+                            <div style="font-size:0.75rem; text-transform:uppercase; font-weight:700; color:var(--text-muted); letter-spacing:0.5px; margin-bottom:2px;">Consult Specialist</div>
+                            <h4 id="kb-specialist-name" style="font-size:1.15rem; font-weight:800; color:var(--text-primary); margin:0 0 4px 0;">Specialist Area</h4>
+                            <p id="kb-specialist-desc" style="font-size:0.85rem; color:var(--text-secondary); margin:0; line-height:1.4;">Specialist description goes here.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Leaflet.js Script CDN -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- 1. LEAFLET MAP LOGIC ---
+        // Initialize map centered at a default location (Bhopal/India center as fallback)
+        const defaultLat = 23.25;
+        const defaultLng = 77.41;
+        
+        const map = L.map('hospitals-map').setView([defaultLat, defaultLng], 12);
+        
+        // Add OpenStreetMap Tile Layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        let userMarker = null;
+        let markersGroup = L.layerGroup().addTo(map);
+
+        const locateBtn = document.getElementById('locate-btn');
+        const hospitalsListContainer = document.getElementById('hospitals-list-container');
+
+        locateBtn.addEventListener('click', () => {
+            locateBtn.disabled = true;
+            locateBtn.querySelector('span').textContent = 'Locating...';
+            locateBtn.querySelector('i').className = 'fa-solid fa-spinner fa-spin';
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        handleLocationFound(lat, lon);
+                    },
+                    (error) => {
+                        console.warn("Geolocation failed or denied. Using default coords.");
+                        alert("Could not retrieve exact location. Displaying local medical clinics around your center.");
+                        handleLocationFound(defaultLat, defaultLng);
+                    },
+                    { timeout: 8000, enableHighAccuracy: true }
+                );
+            } else {
+                alert("Geolocation is not supported by your browser. Using defaults.");
+                handleLocationFound(defaultLat, defaultLng);
+            }
+        });
+
+        async function handleLocationFound(lat, lon) {
+            // Update Map center
+            map.setView([lat, lon], 13);
+
+            // Add user location pulse marker
+            if (userMarker) {
+                map.removeLayer(userMarker);
+            }
+            
+            const pulseIcon = L.divIcon({
+                className: 'user-pulse-icon',
+                html: '<div class="user-pulse-marker"></div>',
+                iconSize: [14, 14],
+                iconAnchor: [7, 7]
+            });
+            userMarker = L.marker([lat, lon], { icon: pulseIcon }).addTo(map).bindPopup("Your Location");
+
+            // Fetch hospitals from API
+            hospitalsListContainer.innerHTML = `<div style="text-align:center; padding:2rem 0; color:var(--text-muted);"><i class="fa-solid fa-spinner fa-spin" style="font-size:1.5rem; margin-bottom:0.5rem; display:block;"></i> Fetching nearby facilities...</div>`;
+            markersGroup.clearLayers();
+
+            try {
+                const response = await fetch('/api/hospitals', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ latitude: lat, longitude: lon })
+                });
+                
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || "Failed to retrieve hospitals.");
+                }
+
+                renderHospitals(data);
+            } catch (err) {
+                hospitalsListContainer.innerHTML = `<p style="color:var(--color-danger); font-size:0.85rem; text-align:center; padding:1.5rem 0;">Error listing clinics: ${err.message}</p>`;
+            } finally {
+                locateBtn.disabled = false;
+                locateBtn.querySelector('span').textContent = 'Locate Me';
+                locateBtn.querySelector('i').className = 'fa-solid fa-location-crosshairs';
+            }
+        }
+
+        function renderHospitals(hospitals) {
+            hospitalsListContainer.innerHTML = '';
+            
+            if (!hospitals || hospitals.length === 0) {
+                hospitalsListContainer.innerHTML = `<p style="color:var(--text-muted); font-size:0.85rem; text-align:center; padding:2rem 0;">No clinics or hospitals detected within 5km.</p>`;
+                return;
+            }
+
+            hospitals.forEach((h, index) => {
+                // Add marker to map
+                const marker = L.marker([h.latitude, h.longitude])
+                    .bindPopup(`
+                        <div style="font-family:sans-serif; color:var(--text-primary);">
+                            <strong style="font-size:0.9rem;">${h.name}</strong><br>
+                            <span style="font-size:0.8rem; color:#64748b;">Rating: ${h.rating} ⭐</span><br>
+                            <span style="font-size:0.8rem; color:#64748b;">Phone: ${h.phone}</span><br>
+                            <a href="https://www.google.com/maps/dir/?api=1&destination=${h.latitude},${h.longitude}" target="_blank" style="display:inline-block; margin-top:0.4rem; font-size:0.75rem; color:#059669; font-weight:bold; text-decoration:none;">Directions ↗</a>
+                        </div>
+                    `);
+                markersGroup.addLayer(marker);
+
+                // Add to sidebar list
+                const card = document.createElement('div');
+                card.className = 'hospital-card';
+                card.innerHTML = `
+                    <div class="hosp-info">
+                        <div class="hosp-name">${h.name}</div>
+                        <div class="hosp-detail"><i class="fa-solid fa-compass" style="margin-right:4px;"></i> ${h.distance} away | ${h.address}</div>
+                        <div class="hosp-detail"><i class="fa-solid fa-phone" style="margin-right:4px;"></i> ${h.phone}</div>
+                        <div class="hosp-detail"><i class="fa-solid fa-clock" style="margin-right:4px;"></i> ${h.open_now}</div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:0.5rem;">
+                        <span class="hosp-rating-badge"><i class="fa-solid fa-star"></i> ${h.rating}</span>
+                        <a href="https://www.google.com/maps/dir/?api=1&destination=${h.latitude},${h.longitude}" target="_blank" class="btn btn-secondary btn-sm" style="padding:0.25rem 0.5rem; font-size:0.75rem; display:flex; align-items:center; gap:0.25rem;">
+                            <span>Route</span>
+                            <i class="fa-solid fa-arrow-turn-up" style="transform:rotate(90deg); font-size:0.7rem;"></i>
+                        </a>
+                    </div>
+                `;
+                
+                // Click card to zoom and open popup
+                card.addEventListener('click', () => {
+                    map.setView([h.latitude, h.longitude], 15);
+                    marker.openPopup();
+                });
+
+                hospitalsListContainer.appendChild(card);
+            });
+        }
+
+        // --- 2. KNOWLEDGE BASE SEARCH LOGIC ---
+        const kbDropdown = document.getElementById('disease-search-dropdown');
+        const kbEmpty = document.getElementById('kb-empty-placeholder');
+        const kbResults = document.getElementById('kb-results-box');
+
+        // Elements to update
+        const kbDiseaseTitle = document.getElementById('kb-disease-title');
+        const kbDiseaseDesc = document.getElementById('kb-disease-desc');
+        const kbPrecautions = document.getElementById('kb-precautions-list');
+        const kbRemedies = document.getElementById('kb-remedies-list');
+        const kbDietRecommended = document.getElementById('kb-diet-recommended');
+        const kbDietAvoid = document.getElementById('kb-diet-avoid');
+        const kbMedicines = document.getElementById('kb-medicines-container');
+        const kbPrescriptionAlert = document.getElementById('kb-prescription-alert');
+        const kbPrescriptionText = document.getElementById('kb-prescription-alert-text');
+        const kbSpecialistName = document.getElementById('kb-specialist-name');
+        const kbSpecialistDesc = document.getElementById('kb-specialist-desc');
+
+        kbDropdown.addEventListener('change', async () => {
+            const diseaseVal = kbDropdown.value;
+            if (!diseaseVal) {
+                kbResults.style.display = 'none';
+                kbEmpty.style.display = 'block';
+                return;
+            }
+
+            kbEmpty.style.display = 'none';
+            // Show loading
+            kbResults.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/recommendations/disease', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ disease_name: diseaseVal })
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || "Could not retrieve knowledge details.");
+                }
+
+                populateRecommendations(data);
+            } catch (err) {
+                alert(err.message);
+                kbEmpty.style.display = 'block';
+            }
+        });
+
+        function populateRecommendations(data) {
+            // Update Text
+            kbDiseaseTitle.textContent = data.disease;
+            kbDiseaseDesc.textContent = data.description;
+            kbSpecialistName.textContent = data.specialist;
+            kbSpecialistDesc.textContent = data.specialist_description || "Consult this healthcare professional for diagnosis, treatment plan, and routine checkups.";
+
+            // Precautions
+            kbPrecautions.innerHTML = '';
+            if (data.precautions && data.precautions.length) {
+                data.precautions.forEach(p => {
+                    const div = document.createElement('div');
+                    div.className = 'precaution-item';
+                    div.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>${p}</span>`;
+                    kbPrecautions.appendChild(div);
+                });
+            } else {
+                kbPrecautions.innerHTML = `<p style="color:var(--text-muted); font-size:0.85rem;">No precaution rules available.</p>`;
+            }
+
+            // Remedies
+            kbRemedies.innerHTML = '';
+            if (data.home_remedies && data.home_remedies.length) {
+                data.home_remedies.forEach(r => {
+                    const li = document.createElement('li');
+                    li.textContent = r;
+                    kbRemedies.appendChild(li);
+                });
+            } else {
+                kbRemedies.innerHTML = `<p style="color:var(--text-muted); font-size:0.85rem;">No specific home remedies documented.</p>`;
+            }
+
+            // Diet
+            kbDietRecommended.innerHTML = '';
+            const recFoods = data.diet.recommended || [];
+            if (recFoods.length) {
+                recFoods.forEach(food => {
+                    const div = document.createElement('div');
+                    div.className = 'diet-item';
+                    div.innerHTML = `<i class="fa-solid fa-square-check" style="color:var(--color-accent);"></i> <span>${food}</span>`;
+                    kbDietRecommended.appendChild(div);
+                });
+            } else {
+                kbDietRecommended.innerHTML = `<span style="color:var(--text-muted); font-size:0.8rem;">None documented</span>`;
+            }
+
+            kbDietAvoid.innerHTML = '';
+            const avoidFoods = data.diet.avoid || [];
+            if (avoidFoods.length) {
+                avoidFoods.forEach(food => {
+                    const div = document.createElement('div');
+                    div.className = 'diet-item';
+                    div.innerHTML = `<i class="fa-solid fa-square-xmark" style="color:var(--color-danger);"></i> <span>${food}</span>`;
+                    kbDietAvoid.appendChild(div);
+                });
+            } else {
+                kbDietAvoid.innerHTML = `<span style="color:var(--text-muted); font-size:0.8rem;">None documented</span>`;
+            }
+
+            // Medicines
+            kbMedicines.innerHTML = '';
+            if (data.prescription_warning) {
+                kbPrescriptionText.textContent = data.prescription_warning;
+                kbPrescriptionAlert.style.display = 'flex';
+            } else {
+                kbPrescriptionAlert.style.display = 'none';
+            }
+
+            if (data.medicines && data.medicines.length) {
+                data.medicines.forEach(m => {
+                    const card = document.createElement('div');
+                    card.className = 'med-detail-card';
+                    card.innerHTML = `
+                        <div class="med-header-row">
+                            <strong style="color:var(--text-primary); font-size:0.95rem;"><i class="fa-solid fa-capsules" style="color:var(--color-primary); margin-right:4px;"></i> ${m.medicine_name}</strong>
+                            <span class="med-badge-otc">${m.medicine_type}</span>
+                        </div>
+                        <p style="font-size:0.85rem; color:var(--text-secondary); margin:0 0 0.5rem 0; line-height:1.4;">${m.description}</p>
+                        <div style="font-size:0.75rem; color:var(--text-muted); background:rgba(0,0,0,0.15); padding:0.4rem 0.65rem; border-radius:4px; border:1px solid var(--border-color);">
+                            <strong>Safety Instructions:</strong> ${m.precautions || 'Consult packaging or pharmacist for dosage rules.'}
+                        </div>
+                    `;
+                    kbMedicines.appendChild(card);
+                });
+            } else if (!data.prescription_warning) {
+                kbMedicines.innerHTML = `<p style="color:var(--text-muted); font-size:0.85rem;">No OTC drugs suggested for this condition.</p>`;
+            }
+
+            // Display Results
+            kbResults.style.display = 'block';
+        }
+
+        // --- 3. TAB HEADERS TOGGLING ---
+        const tabButtons = document.querySelectorAll('.rec-tab-btn');
+        const tabPanes = document.querySelectorAll('.rec-tab-pane');
+
+        tabButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetTab = btn.dataset.tab;
+
+                tabButtons.forEach(b => b.classList.remove('active'));
+                tabPanes.forEach(p => p.classList.remove('active'));
+
+                btn.classList.add('active');
+                document.getElementById(targetTab).classList.add('active');
+            });
+        });
+
+        // Helper to retrieve CSRF token cookie
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    });
+</script>
+{% endblock %}

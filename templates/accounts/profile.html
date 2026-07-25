@@ -1,107 +1,211 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}My Profile | MedIntel{% endblock %}
+{% block title %}Health Profile | MedWise AI{% endblock %}
 
 {% block content %}
 <div class="profile-container">
     <div class="dashboard-title-bar">
-        <h1>Account Profile</h1>
-        <p class="welcome-msg">Manage your personal settings and health profile identity</p>
+        <h1>Health Profile & Settings</h1>
+        <p class="welcome-msg">Manage personal settings and biometric metrics</p>
     </div>
 
-    <div class="profile-card glass-panel">
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            
-            <!-- Avatar Section -->
-            <div class="profile-avatar-section">
-                <div class="profile-preview-wrapper">
-                    {% if user.profile_picture %}
-                        <img src="{{ user.profile_picture.url }}" alt="Profile Avatar" class="profile-preview" id="profile-img-preview">
-                    {% else %}
-                        <div class="profile-preview" id="profile-img-placeholder" style="display:flex;align-items:center;justify-content:center;background:#1e293b;font-size:3rem;font-weight:bold;color:var(--color-primary);">
-                            {{ user.username|slice:":1"|upper }}
-                        </div>
-                        <img src="" alt="Profile Avatar" class="profile-preview" id="profile-img-preview" style="display:none;">
-                    {% endif %}
+    <!-- Tabs header -->
+    <div class="clinical-tabs">
+        <button class="clinical-tab-btn {% if active_tab == 'personal' %}active{% endif %}" onclick="switchTab('personal')">
+            <i class="fa-solid fa-user-gear"></i> Account Settings
+        </button>
+        <button class="clinical-tab-btn {% if active_tab == 'health' %}active{% endif %}" onclick="switchTab('health')">
+            <i class="fa-solid fa-heart-pulse"></i> Health Companion Metrics
+        </button>
+    </div>
+
+    <!-- Tab 1 Content: Account Settings -->
+    <div id="tab-personal" class="tab-pane {% if active_tab == 'personal' %}active{% endif %}">
+        <div class="profile-card glass-panel">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="personal">
+                
+                <!-- Avatar Section -->
+                <div class="profile-avatar-section">
+                    <div class="profile-preview-wrapper">
+                        {% if user.profile_picture %}
+                            <img src="{{ user.profile_picture.url }}" alt="Profile Avatar" class="profile-preview" id="profile-img-preview">
+                        {% else %}
+                            <div class="profile-preview" id="profile-img-placeholder" style="display:flex;align-items:center;justify-content:center;background:rgba(5, 150, 105, 0.1);font-size:3rem;font-weight:bold;color:var(--color-primary);">
+                                {{ user.username|slice:":1"|upper }}
+                            </div>
+                            <img src="" alt="Profile Avatar" class="profile-preview" id="profile-img-preview" style="display:none;">
+                        {% endif %}
+                        
+                        <label for="id_profile_picture" class="profile-upload-label">
+                            <i class="fa-solid fa-camera"></i>
+                            <input type="file" name="profile_picture" id="id_profile_picture" accept="image/*" onchange="previewImage(this);">
+                        </label>
+                    </div>
                     
-                    <label for="id_profile_picture" class="profile-upload-label">
-                        <i class="fa-solid fa-camera"></i>
-                        <input type="file" name="profile_picture" id="id_profile_picture" accept="image/*" onchange="previewImage(this);">
-                    </label>
+                    <div class="profile-meta-title">
+                        <h2>{{ user.first_name }} {{ user.last_name }}</h2>
+                        <p>@{{ user.username }} &bull; User ID: #{{ user.id }}</p>
+                    </div>
                 </div>
-                
-                <div class="profile-meta-title">
-                    <h2>{{ user.first_name }} {{ user.last_name }}</h2>
-                    <p>@{{ user.username }} &bull; User ID: #{{ user.id }}</p>
-                </div>
-            </div>
 
-            <!-- Form Fields Grid -->
-            <div class="form-grid-2">
+                <!-- Form Fields Grid -->
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label for="id_first_name" class="form-label">First Name</label>
+                        {{ user_form.first_name }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_last_name" class="form-label">Last Name</label>
+                        {{ user_form.last_name }}
+                    </div>
+                </div>
+
                 <div class="form-group">
-                    <label for="id_first_name" class="form-label">First Name</label>
-                    {{ form.first_name }}
-                    {% for error in form.first_name.errors %}
-                        <span class="form-help" style="color: var(--color-danger);">{{ error }}</span>
-                    {% endfor %}
+                    <label for="id_email" class="form-label">Email Address</label>
+                    {{ user_form.email }}
                 </div>
-                
-                <div class="form-group">
-                    <label for="id_last_name" class="form-label">Last Name</label>
-                    {{ form.last_name }}
-                    {% for error in form.last_name.errors %}
-                        <span class="form-help" style="color: var(--color-danger);">{{ error }}</span>
-                    {% endfor %}
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label for="id_phone_number" class="form-label">Phone Number</label>
+                        {{ user_form.phone_number }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_date_of_birth" class="form-label">Date of Birth</label>
+                        {{ user_form.date_of_birth }}
+                    </div>
                 </div>
-            </div>
 
-            <div class="form-group">
-                <label for="id_email" class="form-label">Email Address</label>
-                {{ form.email }}
-                {% for error in form.email.errors %}
-                    <span class="form-help" style="color: var(--color-danger);">{{ error }}</span>
-                {% endfor %}
-            </div>
-
-            <div class="form-grid-2">
-                <div class="form-group">
-                    <label for="id_phone_number" class="form-label">Phone Number</label>
-                    {{ form.phone_number }}
-                    {% for error in form.phone_number.errors %}
-                        <span class="form-help" style="color: var(--color-danger);">{{ error }}</span>
-                    {% endfor %}
+                <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: flex-end;">
+                    <a href="{% url 'dashboard:index' %}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">
+                        <span>Save Account Settings</span>
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                    </button>
                 </div>
-                
-                <div class="form-group">
-                    <label for="id_date_of_birth" class="form-label">Date of Birth</label>
-                    {{ form.date_of_birth }}
-                    {% for error in form.date_of_birth.errors %}
-                        <span class="form-help" style="color: var(--color-danger);">{{ error }}</span>
-                    {% endfor %}
+            </form>
+        </div>
+    </div>
+
+    <!-- Tab 2 Content: Health Companion Metrics -->
+    <div id="tab-health" class="tab-pane {% if active_tab == 'health' %}active{% endif %}">
+        <div class="profile-card glass-panel">
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="health">
+
+                <h3 style="font-size: 1.25rem; font-weight:700; margin-bottom: 1.5rem; color:var(--text-primary);">
+                    <i class="fa-solid fa-weight-scale" style="color:var(--color-primary); margin-right:4px;"></i> Biometric Metrics & Goals
+                </h3>
+
+                <div class="form-grid-3" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:1.5rem; margin-bottom: 1.5rem;">
+                    <div class="form-group">
+                        <label for="id_height" class="form-label">Height (cm)</label>
+                        {{ health_form.height }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_weight" class="form-label">Weight (kg)</label>
+                        {{ health_form.weight }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_age" class="form-label">Age (years)</label>
+                        {{ health_form.age }}
+                    </div>
                 </div>
-            </div>
 
-            <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: flex-end;">
-                <a href="{% url 'dashboard:index' %}" class="btn btn-secondary" style="width: auto; padding: 0.85rem 2rem;">Cancel</a>
-                <button type="submit" class="btn btn-primary" style="width: auto; padding: 0.85rem 2.5rem;">
-                    <span>Save Changes</span>
-                    <i class="fa-solid fa-cloud-arrow-up"></i>
-                </button>
-            </div>
+                <div class="form-grid-2" style="margin-bottom: 1.5rem;">
+                    <div class="form-group">
+                        <label for="id_gender" class="form-label">Gender</label>
+                        {{ health_form.gender }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_blood_group" class="form-label">Blood Group</label>
+                        {{ health_form.blood_group }}
+                    </div>
+                </div>
 
-        </form>
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label for="id_fitness_goal" class="form-label">Active Fitness Goal</label>
+                    {{ health_form.fitness_goal }}
+                </div>
+
+                <div class="form-grid-2" style="margin-bottom: 1.5rem;">
+                    <div class="form-group">
+                        <label for="id_water_goal" class="form-label">Daily Hydration Goal (ml)</label>
+                        {{ health_form.water_goal }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_sleep_goal" class="form-label">Daily Sleep Goal (hours)</label>
+                        {{ health_form.sleep_goal }}
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label for="id_allergies" class="form-label">Known Drug/Food Allergies</label>
+                    {{ health_form.allergies }}
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label for="id_existing_conditions" class="form-label">Chronic / Pre-existing Medical Conditions</label>
+                    {{ health_form.existing_conditions }}
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label for="id_emergency_contact" class="form-label">Primary Emergency Contact</label>
+                    {{ health_form.emergency_contact }}
+                </div>
+
+                <!-- Show BMI category inside editing screen if saved -->
+                {% if profile.get_bmi %}
+                <div style="background: rgba(5,150,105,0.04); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: 12px; margin: 2rem 0; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h4 style="font-size:1.05rem; font-weight:700; color:var(--text-primary);"><i class="fa-solid fa-heart-pulse" style="color:var(--color-primary); margin-right:4px;"></i> BMI Diagnostic Status</h4>
+                        <p style="font-size:0.85rem; color:var(--text-secondary); margin-top:0.25rem;">Your current body mass index calculation: <strong>{{ profile.get_bmi }}</strong> ({{ profile.get_bmi_category }})</p>
+                    </div>
+                    <span style="font-size:0.75rem; font-weight:bold; background:var(--color-primary); color:white; padding:4px 10px; border-radius:10px;">Synced</span>
+                </div>
+                {% endif %}
+
+                <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: flex-end;">
+                    <a href="{% url 'dashboard:index' %}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">
+                        <span>Save Health Metrics</span>
+                        <i class="fa-solid fa-circle-check"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
+    // Tab switching controller
+    function switchTab(tabId) {
+        // Toggle tab panes
+        document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+        document.getElementById('tab-' + tabId).classList.add('active');
+
+        // Toggle tab buttons
+        document.querySelectorAll('.clinical-tab-btn').forEach(el => el.classList.remove('active'));
+        // Fallback for click events trigger
+        if (event && event.currentTarget) {
+            event.currentTarget.classList.add('active');
+        }
+        
+        // Update URL parameter without reload
+        const newUrl = window.location.pathname + '?tab=' + tabId;
+        window.history.pushState({path: newUrl}, '', newUrl);
+    }
+
+    // Avatar image previewer
     function previewImage(input) {
         if (input.files && input.files[0]) {
             var reader = new FileReader();
-            
             reader.onload = function (e) {
                 var preview = document.getElementById('profile-img-preview');
                 var placeholder = document.getElementById('profile-img-placeholder');
@@ -113,9 +217,27 @@
                 preview.src = e.target.result;
                 preview.style.display = 'block';
             }
-            
             reader.readAsDataURL(input.files[0]);
         }
     }
+
+    // On page load, read url query param for active tab
+    window.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const tab = urlParams.get('tab');
+        if (tab && (tab === 'personal' || tab === 'health')) {
+            // Find tab button matching param and trigger click
+            const btns = document.querySelectorAll('.clinical-tab-btn');
+            btns.forEach(btn => {
+                if (btn.getAttribute('onclick').includes(tab)) {
+                    btn.classList.add('active');
+                    document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+                    document.getElementById('tab-' + tab).classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+    });
 </script>
 {% endblock %}

@@ -1,123 +1,500 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Dashboard | MedIntel{% endblock %}
+{% block title %}Health Home | MedWise AI{% endblock %}
 
 {% block content %}
 <div class="dashboard-title-bar">
-    <h1>Welcome back, {{ user.first_name|default:user.username }}!</h1>
-    <p class="welcome-msg">Here is a quick overview of your health assistant dashboard</p>
+    <h1>Personalized Health Home</h1>
+    <p class="welcome-msg">Your clinical health companion &bull; Active telemetry node</p>
 </div>
 
-<!-- Metrics Overview -->
-<div class="metrics-grid">
-    <div class="metric-card glass-panel">
-        <div class="metric-icon-box">
-            <i class="fa-solid fa-notes-medical"></i>
-        </div>
-        <div class="metric-info">
-            <span class="metric-label">Disease Predictions</span>
-            <span class="metric-val">0</span>
-        </div>
-    </div>
-    
-    <div class="metric-card glass-panel success">
-        <div class="metric-icon-box">
-            <i class="fa-solid fa-shield-heart"></i>
-        </div>
-        <div class="metric-info">
-            <span class="metric-label">System Health Status</span>
-            <span class="metric-val" style="color: var(--color-accent); font-size: 1.2rem; font-weight: 700;">Normal</span>
-        </div>
-    </div>
+<div class="dashboard-grid-premium">
+    <!-- Main Left Column -->
+    <div class="main-column" style="display: flex; flex-direction: column; gap: 2rem;">
+        
+        <!-- Health Score & BMI Overview Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+            
+            <!-- Health Score Ring Card -->
+            <div class="circular-score-card glass-panel">
+                <div class="circle-progress-wrapper">
+                    <!-- SVG Progress Circle -->
+                    <svg width="120" height="120">
+                        <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(5, 150, 105, 0.08)" stroke-width="10"/>
+                        <circle id="score-ring" cx="60" cy="60" r="50" fill="none" stroke="url(#score-gradient)" stroke-width="10"
+                                stroke-dasharray="314.15" stroke-dashoffset="314.15"
+                                stroke-linecap="round" transform="rotate(-90 60 60)"/>
+                        <defs>
+                            <linearGradient id="score-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#10b981"/>
+                                <stop offset="100%" stop-color="#059669"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                    <div class="circle-progress-text">
+                        <span class="circle-progress-val">{{ health_score }}</span>
+                        <span class="circle-progress-lbl">Score</span>
+                    </div>
+                </div>
+                <div>
+                    <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">Overall Health Index</h3>
+                    <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5;">
+                        {% if health_score >= 85 %}
+                            🎉 <strong>Excellent!</strong> Your daily sleep, hydration, and exercise logs are exceptionally balanced. Keep it up!
+                        {% elif health_score >= 60 %}
+                            👍 <strong>Good!</strong> You're maintaining a healthy baseline. Review insights below to optimize your score.
+                        {% else %}
+                            ⚠️ <strong>Action Required.</strong> Log your stats and increase water intake, steps, or sleep to boost your health score.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
 
-    <div class="metric-card glass-panel warning">
-        <div class="metric-icon-box">
-            <i class="fa-solid fa-hospital-user"></i>
-        </div>
-        <div class="metric-info">
-            <span class="metric-label">Saved Hospitals</span>
-            <span class="metric-val">0</span>
-        </div>
-    </div>
-</div>
+            <!-- BMI Calculator Display Card -->
+            <div class="panel-card glass-panel" style="display: flex; flex-direction: column; justify-content: space-between; margin-bottom: 0;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                    <div>
+                        <h3 style="font-size: 1.15rem; font-weight: 700;">Biometric Body Mass Index (BMI)</h3>
+                        <p style="font-size: 0.8rem; color: var(--text-muted);">Calculated from Height & Weight</p>
+                    </div>
+                    <div style="background: rgba(5, 150, 105, 0.08); color: var(--color-primary); padding: 0.5rem 1rem; border-radius: 10px; font-weight: 800; font-family: var(--font-headers);">
+                        {% if bmi %}{{ bmi }}{% else %}--{% endif %}
+                    </div>
+                </div>
+                
+                <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1rem;">
+                    {% if bmi %}
+                        Your current BMI category is <strong>{{ bmi_category }}</strong>.<br>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">💡 Tip: {{ bmi_tips }}</span>
+                    {% else %}
+                        No height and weight records found in your clinical profile. Update your biometrics to check your BMI index.
+                    {% endif %}
+                </p>
 
-<!-- Main Sections Grid -->
-<div class="dashboard-grid">
-    <!-- Left Column -->
-    <div class="main-column">
-        <div class="panel-card glass-panel">
-            <div class="panel-header">
-                <h2 class="panel-title">MedIntel Sprints Overview</h2>
+                <a href="{% url 'accounts:profile' %}?tab=health" class="btn btn-secondary" style="width: 100%; padding: 0.6rem;">
+                    <i class="fa-solid fa-weight-scale"></i> Update Profile Biometrics
+                </a>
+            </div>
+        </div>
+
+        <!-- Wellness Goals Dials Section -->
+        <div id="wellness-tracker" class="panel-card glass-panel" style="margin-bottom: 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 class="panel-title"><i class="fa-solid fa-circle-check" style="color: var(--color-primary); margin-right: 6px;"></i> Daily Wellness Tracker</h2>
+                <button class="btn btn-primary" style="padding: 0.5rem 1.25rem; font-size: 0.85rem;" onclick="toggleWellnessModal(true)">
+                    <i class="fa-solid fa-plus"></i> Update Wellness Log
+                </button>
             </div>
             
-            <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
-                MedIntel is currently undergoing development. Below is the progress status of the various system modules:
+            <div class="widgets-grid">
+                <!-- Water -->
+                <div class="tracker-widget">
+                    <div class="widget-icon-inner water"><i class="fa-solid fa-droplet"></i></div>
+                    <div class="widget-value">{{ wellness.water_intake|floatformat:0 }} ml</div>
+                    <div class="widget-label">Water Intake</div>
+                    <span style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.25rem;">Goal: {{ profile.water_goal|floatformat:0 }} ml</span>
+                </div>
+                
+                <!-- Sleep -->
+                <div class="tracker-widget">
+                    <div class="widget-icon-inner sleep"><i class="fa-solid fa-moon"></i></div>
+                    <div class="widget-value">{{ wellness.sleep_hours }} hrs</div>
+                    <div class="widget-label">Sleep Duration</div>
+                    <span style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.25rem;">Goal: {{ profile.sleep_goal }} hrs</span>
+                </div>
+                
+                <!-- Exercise -->
+                <div class="tracker-widget">
+                    <div class="widget-icon-inner exercise"><i class="fa-solid fa-person-running"></i></div>
+                    <div class="widget-value">{{ wellness.exercise_duration }} mins</div>
+                    <div class="widget-label">Exercise Time</div>
+                    <span style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.25rem;">Goal: 30 mins</span>
+                </div>
+
+                <!-- Steps -->
+                <div class="tracker-widget">
+                    <div class="widget-icon-inner steps"><i class="fa-solid fa-shoe-prints"></i></div>
+                    <div class="widget-value">{{ wellness.steps }}</div>
+                    <div class="widget-label">Steps Walked</div>
+                    <span style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.25rem;">Goal: 10k steps</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Weekly Telemetry Visual Analytics -->
+        <div class="panel-card glass-panel" style="margin-bottom: 0;">
+            <h2 class="panel-title" style="margin-bottom: 1.5rem;"><i class="fa-solid fa-chart-line" style="color: var(--color-primary); margin-right: 6px;"></i> Weekly Health Trends</h2>
+            <div style="height: 320px; position: relative; width: 100%;">
+                <canvas id="healthTelemetryChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Real-Time Recent Predictions Feed -->
+        <div class="panel-card glass-panel" style="margin-bottom: 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 class="panel-title"><i class="fa-solid fa-receipt" style="color: var(--color-primary); margin-right: 6px;"></i> Diagnostic Prediction History</h2>
+                <a href="{% url 'dashboard:predict_page' %}" class="btn btn-secondary" style="padding: 0.5rem 1.25rem; font-size: 0.85rem;">
+                    <i class="fa-solid fa-stethoscope"></i> Test Symptoms
+                </a>
+            </div>
+            
+            <div id="predictions-feed-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
+                <!-- Dynamically populated via script -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Right Column -->
+    <div class="sidebar-column" style="display: flex; flex-direction: column; gap: 2rem;">
+        
+        <!-- Emergency SOS Section -->
+        <div class="emergency-card-premium">
+            <div class="emergency-header">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span>Emergency Response</span>
+            </div>
+            <p style="font-size: 0.85rem; color: #7f1d1d; line-height: 1.5; margin-bottom: 1.5rem;">
+                If you are undergoing severe pain, heavy choking, breathing distress, or suspect stroke, take immediate emergency protocols.
             </p>
-
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
-                <!-- Sprint 1 (Active) -->
-                <div style="padding: 1.25rem; border-radius: var(--border-radius-md); background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.2);">
-                    <div style="color: var(--color-primary); font-size: 1.5rem; margin-bottom: 0.5rem;">
-                        <i class="fa-solid fa-laptop-code"></i>
-                    </div>
-                    <h3 style="font-size: 1.05rem; margin-bottom: 0.25rem;">Sprint 1: Foundation</h3>
-                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Django base app, auth, responsive styling.</p>
-                    <span style="font-size: 0.75rem; background: var(--color-primary); color: white; padding: 2px 8px; border-radius: 10px; font-weight: bold;">Active</span>
+            
+            <!-- Real-time alarm sounding simulation -->
+            <button class="sos-button-premium" id="sos-btn" onclick="soundSOSAlert()">
+                <i class="fa-solid fa-phone-flip"></i> Trigger SOS Call
+            </button>
+            
+            <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem;">
+                <div style="display:flex; justify-content:space-between; border-bottom: 1px solid rgba(239,68,68,0.1); padding-bottom: 0.5rem;">
+                    <span style="font-size:0.85rem; font-weight:600; color:#991b1b;">Local Emergency</span>
+                    <span style="font-size:0.85rem; font-weight:700; color:#ef4444;">112 / 911</span>
                 </div>
-
-                <!-- Sprint 2 -->
-                <div style="padding: 1.25rem; border-radius: var(--border-radius-md); background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); opacity: 0.7;">
-                    <div style="color: var(--text-secondary); font-size: 1.5rem; margin-bottom: 0.5rem;">
-                        <i class="fa-solid fa-brain"></i>
-                    </div>
-                    <h3 style="font-size: 1.05rem; margin-bottom: 0.25rem;">Sprint 2: Predictor</h3>
-                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Disease symptoms AI classifier model.</p>
-                    <span style="font-size: 0.75rem; background: #374151; color: var(--text-secondary); padding: 2px 8px; border-radius: 10px;">Pending</span>
+                <div style="display:flex; justify-content:space-between; border-bottom: 1px solid rgba(239,68,68,0.1); padding-bottom: 0.5rem;">
+                    <span style="font-size:0.85rem; font-weight:600; color:#991b1b;">Clinical Desk</span>
+                    <span style="font-size:0.85rem; font-weight:700; color:#3b82f6;">+1 (800) 555-0199</span>
                 </div>
+            </div>
 
-                <!-- Sprint 3 -->
-                <div style="padding: 1.25rem; border-radius: var(--border-radius-md); background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); opacity: 0.7;">
-                    <div style="color: var(--text-secondary); font-size: 1.5rem; margin-bottom: 0.5rem;">
-                        <i class="fa-solid fa-map-location-dot"></i>
-                    </div>
-                    <h3 style="font-size: 1.05rem; margin-bottom: 0.25rem;">Sprint 3: Clinics/Meds</h3>
-                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Nearby clinics list and OTC drug guide.</p>
-                    <span style="font-size: 0.75rem; background: #374151; color: var(--text-secondary); padding: 2px 8px; border-radius: 10px;">Pending</span>
-                </div>
-
-                <!-- Sprint 4 -->
-                <div style="padding: 1.25rem; border-radius: var(--border-radius-md); background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); opacity: 0.7;">
-                    <div style="color: var(--text-secondary); font-size: 1.5rem; margin-bottom: 0.5rem;">
-                        <i class="fa-solid fa-robot"></i>
-                    </div>
-                    <h3 style="font-size: 1.05rem; margin-bottom: 0.25rem;">Sprint 4: AI & PDF</h3>
-                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Gemini Chatbot & report text summarization.</p>
-                    <span style="font-size: 0.75rem; background: #374151; color: var(--text-secondary); padding: 2px 8px; border-radius: 10px;">Pending</span>
-                </div>
+            <!-- First Aid Guide Anchor links -->
+            <div style="margin-top: 1.5rem; background: rgba(255,255,255,0.6); padding: 1rem; border-radius: 8px; border: 1px solid rgba(239,68,68,0.12);">
+                <h4 style="font-size: 0.85rem; color:#991b1b; margin-bottom: 0.5rem;"><i class="fa-solid fa-kit-medical"></i> Quick First Aid Guide</h4>
+                <ul style="list-style:none; font-size:0.78rem; color:#7f1d1d; display:flex; flex-direction:column; gap:0.4rem; padding-left:0;">
+                    <li>&bull; <strong>Stroke:</strong> Check Face droop, Arm weakness, Speech. Call SOS.</li>
+                    <li>&bull; <strong>Choking:</strong> Apply firm Heimlich abdominal thrusts.</li>
+                    <li>&bull; <strong>Burns:</strong> Run cold tap water for 10-20 minutes.</li>
+                </ul>
             </div>
         </div>
-    </div>
 
-    <!-- Right Column -->
-    <div class="sidebar-column">
-        <div class="panel-card glass-panel" style="height: 100%;">
-            <div class="panel-header">
-                <h2 class="panel-title">System Activity</h2>
+        <!-- Intelligent Health Insights Panel -->
+        <div class="panel-card glass-panel">
+            <h2 class="panel-title" style="margin-bottom: 1rem;"><i class="fa-solid fa-lightbulb" style="color: var(--color-primary); margin-right: 6px;"></i> Health Insights</h2>
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                {% for insight in insights %}
+                    <div style="background: rgba(5, 150, 105, 0.03); border: 1px solid var(--border-color); padding: 0.85rem 1rem; border-radius: 10px; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; display: flex; gap: 0.5rem;">
+                        <i class="fa-solid fa-circle-info" style="color: var(--color-primary); margin-top: 0.2rem;"></i>
+                        <span>{{ insight }}</span>
+                    </div>
+                {% empty %}
+                    <p style="font-size: 0.85rem; color: var(--text-muted);">Log biometrics and logs to generate clinical insights.</p>
+                {% endfor %}
             </div>
+        </div>
+
+        <!-- Clinical Events Timeline -->
+        <div class="panel-card glass-panel">
+            <h2 class="panel-title" style="margin-bottom: 1.5rem;"><i class="fa-solid fa-clock-rotate-left" style="color: var(--color-primary); margin-right: 6px;"></i> Health Timeline</h2>
             
-            <div class="activity-list">
-                {% for activity in recent_activities %}
-                    <div class="activity-item">
-                        <div style="display: flex; flex-direction: column; gap: 0.25rem;">
-                            <span style="font-size: 0.9rem; font-weight: 500;">{{ activity.activity }}</span>
-                            <span class="activity-meta"><i class="fa-regular fa-clock" style="margin-right: 4px;"></i> {{ activity.date }}</span>
+            <div class="timeline-list">
+                {% for event in timeline %}
+                    <div class="timeline-event">
+                        <div class="timeline-marker" style="border-color: {{ event.color }};"></div>
+                        <div class="timeline-content-card">
+                            <span class="timeline-time-meta"><i class="fa-regular fa-clock"></i> {{ event.time|date:"M d, H:i" }}</span>
+                            <h4 class="timeline-event-title"><i class="fa-solid {{ event.icon }}" style="color: {{ event.color }}; margin-right: 4px;"></i> {{ event.title }}</h4>
+                            <p class="timeline-event-desc">{{ event.description }}</p>
                         </div>
                     </div>
                 {% empty %}
-                    <p style="color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 2rem 0;">No activities recorded yet.</p>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); text-align: center; padding: 1rem 0;">Timeline is currently empty.</p>
                 {% endfor %}
             </div>
         </div>
     </div>
 </div>
+
+<!-- Slide-Out Wellness Tracker Update Modal -->
+<div id="wellness-modal" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(2, 44, 34, 0.45); backdrop-filter: blur(4px); display: none; z-index: 10000; align-items: center; justify-content: center;">
+    <div class="panel-card glass-panel" style="width: 90%; max-width: 500px; padding: 2rem; margin-bottom: 0; background: white; border-radius: var(--border-radius-lg); position: relative; max-height: 90vh; overflow-y: auto;">
+        <button style="position: absolute; top: 1.25rem; right: 1.25rem; border: none; background: none; font-size: 1.25rem; cursor: pointer; color: var(--text-muted);" onclick="toggleWellnessModal(false)">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; color: var(--text-primary);">
+            <i class="fa-solid fa-pen-to-square" style="color: var(--color-primary);"></i> Update Daily Logs
+        </h2>
+        
+        <form id="wellness-update-form" method="post" action="{% url 'dashboard:update_wellness' %}">
+            {% csrf_token %}
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label" for="water_input">Water Intake (ml)</label>
+                        <input type="number" name="water" id="water_input" class="chat-input-field" style="width:100%; padding: 0.65rem;" value="{{ wellness.water_intake|floatformat:0 }}" required min="0">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="sleep_input">Sleep Hours</label>
+                        <input type="number" step="0.5" name="sleep" id="sleep_input" class="chat-input-field" style="width:100%; padding: 0.65rem;" value="{{ wellness.sleep_hours }}" required min="0">
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label" for="exercise_input">Exercise (mins)</label>
+                        <input type="number" name="exercise" id="exercise_input" class="chat-input-field" style="width:100%; padding: 0.65rem;" value="{{ wellness.exercise_duration }}" required min="0">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="steps_input">Steps Walked</label>
+                        <input type="number" name="steps" id="steps_input" class="chat-input-field" style="width:100%; padding: 0.65rem;" value="{{ wellness.steps }}" required min="0">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label" for="calories_input">Calories Consumed</label>
+                        <input type="number" name="calories" id="calories_input" class="chat-input-field" style="width:100%; padding: 0.65rem;" value="{{ wellness.calories_consumed }}" required min="0">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="screen_input">Screen Time (hrs)</label>
+                        <input type="number" step="0.5" name="screen_time" id="screen_input" class="chat-input-field" style="width:100%; padding: 0.65rem;" value="{{ wellness.screen_time }}" required min="0">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label" for="hr_input">Heart Rate (bpm)</label>
+                        <input type="number" name="heart_rate" id="hr_input" class="chat-input-field" style="width:100%; padding: 0.65rem;" value="{% if wellness.heart_rate %}{{ wellness.heart_rate }}{% endif %}" placeholder="e.g. 72">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="bp_input">Blood Pressure</label>
+                        <input type="text" name="blood_pressure" id="bp_input" class="chat-input-field" style="width:100%; padding: 0.65rem;" value="{% if wellness.blood_pressure %}{{ wellness.blood_pressure }}{% endif %}" placeholder="e.g. 120/80">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="mood_select">Daily Mood Indicator</label>
+                    <select name="mood" id="mood_select" class="chat-input-field" style="width:100%; padding: 0.65rem; background: white;">
+                        <option value="Calm" {% if wellness.mood == 'Calm' %}selected{% endif %}>Calm</option>
+                        <option value="Happy" {% if wellness.mood == 'Happy' %}selected{% endif %}>Happy</option>
+                        <option value="Energetic" {% if wellness.mood == 'Energetic' %}selected{% endif %}>Energetic</option>
+                        <option value="Stressed" {% if wellness.mood == 'Stressed' %}selected{% endif %}>Stressed</option>
+                        <option value="Tired" {% if wellness.mood == 'Tired' %}selected{% endif %}>Tired</option>
+                    </select>
+                </div>
+                
+                <div style="margin-top: 1rem; display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button type="button" class="btn btn-secondary" onclick="toggleWellnessModal(false)">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Metrics</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // Animate Health Score progress circle
+    const scoreRing = document.getElementById('score-ring');
+    if (scoreRing) {
+        const scoreVal = parseInt("{{ health_score }}") || 0;
+        const circumference = 314.159;
+        const offset = circumference - (scoreVal / 100) * circumference;
+        scoreRing.style.strokeDashoffset = offset;
+    }
+
+    // 1. Chart.js Dashboard Telemetry Rendering
+    const ctx = document.getElementById('healthTelemetryChart').getContext('2d');
+    
+    // Parse context variables
+    const labels = {{ chart_labels|safe }};
+    const waterData = {{ chart_water|safe }};
+    const sleepData = {{ chart_sleep|safe }};
+    const scoreData = {{ chart_score|safe }};
+    const stepsData = {{ chart_steps|safe }};
+    
+    const telemetryChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Health Score Index',
+                    data: scoreData,
+                    borderColor: '#059669',
+                    backgroundColor: 'rgba(5, 150, 105, 0.05)',
+                    borderWidth: 3,
+                    tension: 0.35,
+                    fill: true,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Water Intake (dl)',
+                    // Divide ml by 100 for comfortable graph comparison
+                    data: waterData.map(v => v / 100),
+                    borderColor: '#3b82f6',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    tension: 0.2,
+                    yAxisID: 'y1'
+                },
+                {
+                    label: 'Sleep Hours',
+                    data: sleepData,
+                    borderColor: '#8b5cf6',
+                    borderWidth: 2,
+                    tension: 0.2,
+                    yAxisID: 'y1'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        font: { family: 'Outfit', size: 12 },
+                        color: '#334155'
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { display: false }
+                },
+                y: {
+                    type: 'linear',
+                    position: 'left',
+                    min: 0,
+                    max: 100,
+                    title: {
+                        display: true,
+                        text: 'Health Index Scale',
+                        font: { family: 'Outfit', weight: 600 }
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    position: 'right',
+                    grid: { drawOnChartArea: false },
+                    min: 0,
+                    max: 30,
+                    title: {
+                        display: true,
+                        text: 'Sleep (hrs) / Water (x100ml)',
+                        font: { family: 'Outfit', weight: 600 }
+                    }
+                }
+            }
+        }
+    });
+
+    // 2. Slide-out update modal control
+    function toggleWellnessModal(show) {
+        const modal = document.getElementById("wellness-modal");
+        modal.style.display = show ? "flex" : "none";
+    }
+
+    // 3. Real-Time Emergency SOS Sound Simulation
+    function soundSOSAlert() {
+        const sosBtn = document.getElementById("sos-btn");
+        sosBtn.style.background = "#b91c1c";
+        sosBtn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Transmitting coordinates...";
+        
+        // Visual flashing effects
+        let flash = true;
+        const interval = setInterval(() => {
+            document.body.style.background = flash ? "#fef2f2" : "#ffffff";
+            flash = !flash;
+        }, 300);
+
+        setTimeout(() => {
+            clearInterval(interval);
+            document.body.style.background = "#ffffff";
+            alert("🚨 EMERGENCY NOTICE: SOS Beacon Transmitted.\nMedWise AI has logged your coordinates and flagged your local profile. Calling local paramedics desk 112/911 immediately.");
+            sosBtn.style.background = "linear-gradient(135deg, #ef4444, #b91c1c)";
+            sosBtn.innerHTML = "<i class='fa-solid fa-phone-flip'></i> Trigger SOS Call";
+        }, 2500);
+    }
+
+    // 4. Real-Time Predictions Polling & Update Interface
+    const historyContainer = document.getElementById("predictions-feed-container");
+    let loadedPredictionIds = new Set();
+
+    function fetchAndRenderPredictions() {
+        fetch('/api/history')
+            .then(res => res.json())
+            .then(data => {
+                if (data && Array.isArray(data)) {
+                    if (data.length === 0) {
+                        historyContainer.innerHTML = `
+                            <div class="glass-panel" style="grid-column: 1/-1; text-align:center; padding:2rem; color:var(--text-muted); border-radius: var(--border-radius-md);">
+                                <i class="fa-solid fa-stethoscope" style="font-size: 2rem; margin-bottom: 0.5rem; opacity:0.4;"></i>
+                                <p>No disease predictions recorded yet. Run a prediction on the Disease Prediction page.</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    // Map prediction objects to cards
+                    let newHtml = "";
+                    data.slice(0, 4).forEach(item => {
+                        const date = new Date(item.created_at);
+                        const formattedDate = date.toLocaleDateString('en-US', {month: 'short', day: 'numeric'}) + ' @ ' + date.toLocaleTimeString('en-US', {hour: '2-digit', minute:'2-digit'});
+                        const confidence = parseFloat(item.confidence);
+                        
+                        let riskClass = "success";
+                        let riskLabel = "Low Risk";
+                        if (confidence > 80) {
+                            riskClass = "danger";
+                            riskLabel = "High Risk";
+                        } else if (confidence > 50) {
+                            riskClass = "warning";
+                            riskLabel = "Moderate Risk";
+                        }
+
+                        newHtml += `
+                            <div class="panel-card glass-panel" style="margin-bottom: 0; display: flex; flex-direction: column; justify-content: space-between; border-left: 4px solid var(--color-${riskClass === 'danger' ? 'danger' : (riskClass === 'warning' ? 'warning' : 'accent')}); transform: translateY(0); transition: all 0.3s ease;">
+                                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 0.5rem;">
+                                    <span style="font-size:0.75rem; color:var(--text-muted);"><i class="fa-regular fa-calendar"></i> ${formattedDate}</span>
+                                    <span style="font-size:0.7rem; font-weight:700; background:rgba(var(--color-${riskClass}-rgb), 0.1); color:var(--color-${riskClass}); padding:2px 8px; border-radius:10px;">${riskLabel}</span>
+                                </div>
+                                <h4 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem; color:var(--text-primary);">${item.prediction}</h4>
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 1rem;">
+                                    <span style="font-size:0.85rem; font-weight:600; color:var(--text-secondary);">Confidence: ${confidence.toFixed(1)}%</span>
+                                    <a href="{% url 'recommendations:medicines_maps' %}?disease=${encodeURIComponent(item.prediction)}" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size:0.75rem;">
+                                        View Details <i class="fa-solid fa-chevron-right" style="font-size: 0.65rem;"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    // Compare contents to prevent layout flicker unless updated
+                    if (historyContainer.innerHTML.trim() !== newHtml.trim()) {
+                        historyContainer.innerHTML = newHtml;
+                    }
+                }
+            })
+            .catch(err => console.error("Error fetching live diagnostic stream:", err));
+    }
+
+    // Polling setup: update predictions index real-time every 10 seconds
+    fetchAndRenderPredictions();
+    setInterval(fetchAndRenderPredictions, 10000);
+</script>
 {% endblock %}

@@ -38,6 +38,14 @@ class PredictView(View):
                 return JsonResponse({"error": "Invalid JSON format in request body."}, status=400)
 
             symptoms = data.get("symptoms")
+            severity = str(data.get("severity", "mild")).strip().lower()
+            if severity not in ("mild", "moderate", "severe"):
+                severity = "mild"
+                
+            try:
+                duration = int(data.get("duration", 1))
+            except (ValueError, TypeError):
+                duration = 1
             
             # 3. Payload validation
             if symptoms is None:
@@ -57,7 +65,7 @@ class PredictView(View):
 
             # 4. Predict
             try:
-                result = DiseasePredictor.predict(symptoms)
+                result = DiseasePredictor.predict(symptoms, severity=severity, duration=duration)
             except ValueError as val_err:
                 # Catch unknown symptoms or validation errors from predictor
                 return JsonResponse({"error": str(val_err)}, status=400)
@@ -65,30 +73,51 @@ class PredictView(View):
             # Calculate latency in milliseconds
             latency_ms = (time.time() - start_time) * 1000
 
-            # 5. Persist Prediction History
-            prediction_record = PredictionHistory.objects.create(
-                user=request.user,
-                symptoms=symptoms,
-                prediction=result["prediction"],
-                confidence=result["confidence"],
-                model_version=result["model_version"]
-            )
+            # 5. Persist Prediction History (only if sufficient symptoms are provided)
+            prediction_id = None
+            if result.get("sufficientSymptoms", True):
+                hist_prediction = result["prediction"]
+                hist_confidence = result["predictionConfidence"]
+                
+                if hist_prediction is None and result.get("topPredictions"):
+                    hist_prediction = f"Possible: {result['topPredictions'][0]['disease']}"
+                    hist_confidence = result['topPredictions'][0]['confidence']
+                elif hist_prediction is None:
+                    hist_prediction = "Undetermined"
+                    hist_confidence = 0.0
+                    
+                prediction_record = PredictionHistory.objects.create(
+                    user=request.user,
+                    symptoms=symptoms,
+                    prediction=hist_prediction,
+                    confidence=hist_confidence,
+                    model_version=result["model_version"]
+                )
+                prediction_id = str(prediction_record.id)
 
-            # 6. Log prediction metrics
-            log_prediction(
-                user=request.user,
-                disease=result["prediction"],
-                confidence=result["confidence"],
-                latency_ms=latency_ms
-            )
+                # 6. Log prediction metrics
+                log_prediction(
+                    user=request.user,
+                    disease=hist_prediction,
+                    confidence=hist_confidence,
+                    latency_ms=latency_ms
+                )
 
             # Return success response
             return JsonResponse({
+                "sufficientSymptoms": result["sufficientSymptoms"],
                 "prediction": result["prediction"],
                 "confidence": result["confidence"],
+                "predictionConfidence": result["predictionConfidence"],
+                "prediction_id": prediction_id,
                 "description": result["description"],
                 "precautions": result["precautions"],
+                "topPredictions": result["topPredictions"],
                 "top_predictions": result["top_predictions"],
+                "followUpQuestions": result["followUpQuestions"],
+                "recommendation": result["recommendation"],
+                "emergencyWarning": result["emergencyWarning"],
+                "warning": result.get("warning"),
                 "latency_ms": round(latency_ms, 2)
             }, status=200)
 

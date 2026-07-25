@@ -56,6 +56,8 @@ INSTALLED_APPS = [
     'accounts.apps.AccountsConfig',
     'dashboard.apps.DashboardConfig',
     'prediction.apps.PredictionConfig',
+    'recommendations.apps.RecommendationsConfig',
+    'hospitals.apps.HospitalsConfig',
 ]
 
 MIDDLEWARE = [
