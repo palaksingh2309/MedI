@@ -147,8 +147,8 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             else:
                 water_data.append(0)
                 sleep_data.append(0)
-                water_data.append(0)
-                sleep_data.append(0)
+                exercise_data.append(0)
+                steps_data.append(0)
                 score_data.append(25) # base starting score
                 
             weight_data.append(round(current_weight + (i * 0.15) % 0.6 - 0.3, 1))

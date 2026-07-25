@@ -4,13 +4,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MedWise AI | Your Health Companion</title>
+    <title>MedIntel | Your Health Companion</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Styles -->
     <link rel="stylesheet" href="{% static 'css/styles.css' %}?v=2.0">
+    <style>
+        #splash-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #ffffff;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 1;
+            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #splash-overlay.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .splash-logo-container {
+            position: relative;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .splash-logo-ring {
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.75rem;
+            color: #ffffff;
+            box-shadow: 0 10px 25px rgba(5, 150, 105, 0.15);
+            z-index: 2;
+            animation: pulse-ring 2.5s infinite ease-in-out;
+        }
+
+        .splash-logo-pulse {
+            position: absolute;
+            width: 110px;
+            height: 110px;
+            border: 2px solid rgba(16, 185, 129, 0.25);
+            border-radius: 50%;
+            animation: pulse-circle 2s infinite ease-out;
+            z-index: 1;
+        }
+
+        @keyframes pulse-ring {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes pulse-circle {
+            0% { transform: scale(0.85); opacity: 1; }
+            100% { transform: scale(1.4); opacity: 0; }
+        }
+
+        .splash-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 3rem;
+            font-weight: 700;
+            color: #064e3b;
+            margin-bottom: 0.5rem;
+            letter-spacing: -1px;
+            opacity: 0;
+            animation: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation-delay: 0.2s;
+        }
+
+        .splash-subtitle {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #64748b;
+            margin-bottom: 3rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            opacity: 0;
+            animation: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation-delay: 0.4s;
+        }
+
+        .splash-progress-container {
+            width: 200px;
+            height: 4px;
+            background-color: #f1f5f9;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 3rem;
+            opacity: 0;
+            animation: fade-in 0.8s ease-in forwards;
+            animation-delay: 0.6s;
+        }
+
+        .splash-progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #10b981, #059669);
+            border-radius: 2px;
+            transition: width 0.1s linear;
+        }
+
+        .splash-quote-card {
+            max-width: 480px;
+            text-align: center;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.25rem;
+            font-style: italic;
+            font-weight: 400;
+            color: #334155;
+            line-height: 1.6;
+            padding: 0 1.5rem;
+            min-height: 80px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        @keyframes fade-in-up {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
 </head>
 <body style="background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%); min-height: 100vh;">
 
@@ -22,12 +163,12 @@
             </div>
             <div class="splash-logo-pulse"></div>
         </div>
-        <h1 class="splash-title">MedWise AI</h1>
+        <h1 class="splash-title">MedIntel</h1>
         <p class="splash-subtitle">Personalized Clinical Health Companion</p>
         <div class="splash-progress-container">
             <div class="splash-progress-bar" id="splash-progress"></div>
         </div>
-        <div class="splash-quote-card" id="splash-quote">
+        <div class="splash-quote-card" id="splash-quote" style="opacity: 0;">
             "Your health is your greatest wealth."
         </div>
     </div>
@@ -36,7 +177,7 @@
     <nav class="landing-navbar">
         <a href="#" class="brand-link" style="font-size: 1.5rem;">
             <span class="brand-logo-icon"><i class="fa-solid fa-heart-pulse"></i></span>
-            <span>MedWise AI</span>
+            <span>MedIntel</span>
         </a>
         
         <ul class="landing-nav-links">
@@ -107,7 +248,7 @@
             <div id="quote-carousel">
                 <div class="quote-slide">
                     <p class="quote-text" id="carousel-text">"Your health is your greatest wealth."</p>
-                    <p style="color: var(--color-primary); font-weight: 600;">MedWise Wisdom</p>
+                    <p style="color: var(--color-primary); font-weight: 600;">MedIntel Wisdom</p>
                 </div>
             </div>
         </div>
@@ -190,7 +331,7 @@
     <footer class="medwise-footer">
         <div class="footer-content">
             <div class="footer-brand">
-                <h3>MedWise AI</h3>
+                <h3>MedIntel</h3>
                 <p>
                     A premium digital health companion providing predictive diagnostics, metrics logs, and clinical record analysis in a calming layout.
                 </p>
@@ -217,25 +358,25 @@
                     <li><a href="#">Privacy Policy</a></li>
                     <li><a href="#">Terms of Service</a></li>
                     <li><a href="#">Support Center</a></li>
-                    <li><a href="mailto:support@medwise.ai">Contact Clinical Team</a></li>
+                    <li><a href="mailto:support@medintel.ai">Contact Clinical Team</a></li>
                 </ul>
             </div>
         </div>
         
         <div class="footer-bottom">
-            <span>&copy; 2026 MedWise AI Companion. All rights reserved.</span>
+            <span>&copy; 2026 MedIntel Companion. All rights reserved.</span>
             <span>Version 2.0.1 &bull; Clinical Assist Node</span>
         </div>
         
         <div class="disclaimer-text">
-            <strong>Medical Disclaimer:</strong> MedWise AI is an informational decision-support software application. The predictions, suggestions, and reports generated are not professional medical diagnoses or prescribing treatments. Always consult with a licensed physician or emergency services if you feel unwell or are undergoing a health crisis.
+            <strong>Medical Disclaimer:</strong> MedIntel is an informational decision-support software application. The predictions, suggestions, and reports generated are not professional medical diagnoses or prescribing treatments. Always consult with a licensed physician or emergency services if you feel unwell or are undergoing a health crisis.
         </div>
     </footer>
 
     <!-- Script loaders for splash animation and carousel -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            // Quotes rotation list
+            // Quotes rotation list for general carousel
             const quotes = [
                 "Your health is your greatest wealth.",
                 "Prevention is better than cure.",
@@ -246,34 +387,63 @@
                 "Healthy habits today build a stronger tomorrow."
             ];
 
-            // 1. Splash Screen Loader Progress Simulation
+            // 1. Premium 5-Second Splash Screen Loader Progress Animation
             const splashOverlay = document.getElementById("splash-overlay");
             const progressBar = document.getElementById("splash-progress");
             const splashQuote = document.getElementById("splash-quote");
             
-            // Check if splash has already been shown in this session
-            if (sessionStorage.getItem("splash_shown")) {
-                splashOverlay.style.display = "none";
-            } else {
-                // Pick a random quote for splash screen
-                splashQuote.innerText = `"${quotes[Math.floor(Math.random() * quotes.length)]}"`;
+            // Thoughts to display sequentially during the 5 second load
+            const splashThoughts = [
+                "Welcome to MedIntel. Analyzing your health telemetry...",
+                "Empowering your daily choices with clinical intelligence...",
+                "Your journey to optimal wellness starts here."
+            ];
+
+            // Show first thought immediately
+            splashQuote.innerText = `"${splashThoughts[0]}"`;
+            splashQuote.style.opacity = 1;
+
+            // Change thought 2 at 1.8s
+            setTimeout(() => {
+                splashQuote.style.opacity = 0;
+                setTimeout(() => {
+                    splashQuote.innerText = `"${splashThoughts[1]}"`;
+                    splashQuote.style.opacity = 1;
+                }, 400);
+            }, 1800);
+
+            // Change thought 3 at 3.4s
+            setTimeout(() => {
+                splashQuote.style.opacity = 0;
+                setTimeout(() => {
+                    splashQuote.innerText = `"${splashThoughts[2]}"`;
+                    splashQuote.style.opacity = 1;
+                }, 400);
+            }, 3400);
+
+            // Animate progress bar over exactly 5000ms using requestAnimationFrame for high performance
+            let start = null;
+            const totalDuration = 5000; // 5 seconds
+            
+            function animateProgress(timestamp) {
+                if (!start) start = timestamp;
+                const elapsed = timestamp - start;
+                const progressPercent = Math.min((elapsed / totalDuration) * 100, 100);
+                progressBar.style.width = `${progressPercent}%`;
                 
-                let progress = 0;
-                const interval = setInterval(() => {
-                    progress += 4;
-                    progressBar.style.width = `${progress}%`;
-                    if (progress >= 100) {
-                        clearInterval(interval);
+                if (elapsed < totalDuration) {
+                    requestAnimationFrame(animateProgress);
+                } else {
+                    // Hide splash screen after completion
+                    setTimeout(() => {
+                        splashOverlay.classList.add("fade-out");
                         setTimeout(() => {
-                            splashOverlay.classList.add("fade-out");
-                            sessionStorage.setItem("splash_shown", "true");
-                            setTimeout(() => {
-                                splashOverlay.style.display = "none";
-                            }, 600);
-                        }, 200);
-                    }
-                }, 80);
+                            splashOverlay.style.display = "none";
+                        }, 800); // Wait for CSS opacity transition to complete
+                    }, 100);
+                }
             }
+            requestAnimationFrame(animateProgress);
 
             // 2. Health Quotes Section Carousel
             const carouselText = document.getElementById("carousel-text");

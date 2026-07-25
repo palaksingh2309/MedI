@@ -749,7 +749,6 @@ h1, h2, h3, h4, h5, h6 {
     .dashboard-grid {
         grid-template-columns: 1fr;
     }
-}
 
     .form-grid-2 {
         grid-template-columns: 1fr;
@@ -757,7 +756,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ==========================================================================
-   MedWise AI Premium Clinical Styles
+   MedIntel Premium Clinical Styles
    ========================================================================== */
 
 /* Splash Screen Overlay */
@@ -1592,4 +1591,19 @@ h1, h2, h3, h4, h5, h6 {
         grid-template-columns: 1fr;
     }
 }
+
+/* Timeline Custom Helper Classes */
+.timeline-marker-prediction {
+    border-color: var(--color-primary) !important;
+}
+.timeline-marker-report {
+    border-color: var(--color-accent) !important;
+}
+.timeline-icon-prediction {
+    color: var(--color-primary);
+}
+.timeline-icon-report {
+    color: var(--color-accent);
+}
+
 

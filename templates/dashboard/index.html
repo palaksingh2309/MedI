@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Health Home | MedWise AI{% endblock %}
+{% block title %}Health Home | MedIntel{% endblock %}
 
 {% block content %}
 <div class="dashboard-title-bar">
@@ -207,10 +207,10 @@
             <div class="timeline-list">
                 {% for event in timeline %}
                     <div class="timeline-event">
-                        <div class="timeline-marker" style="border-color: {{ event.color }};"></div>
+                        <div class="timeline-marker timeline-marker-{{ event.type }}"></div>
                         <div class="timeline-content-card">
                             <span class="timeline-time-meta"><i class="fa-regular fa-clock"></i> {{ event.time|date:"M d, H:i" }}</span>
-                            <h4 class="timeline-event-title"><i class="fa-solid {{ event.icon }}" style="color: {{ event.color }}; margin-right: 4px;"></i> {{ event.title }}</h4>
+                            <h4 class="timeline-event-title"><i class="fa-solid {{ event.icon }} timeline-icon-{{ event.type }}" style="margin-right: 4px;"></i> {{ event.title }}</h4>
                             <p class="timeline-event-desc">{{ event.description }}</p>
                         </div>
                     </div>
@@ -319,11 +319,11 @@
     const ctx = document.getElementById('healthTelemetryChart').getContext('2d');
     
     // Parse context variables
-    const labels = {{ chart_labels|safe }};
-    const waterData = {{ chart_water|safe }};
-    const sleepData = {{ chart_sleep|safe }};
-    const scoreData = {{ chart_score|safe }};
-    const stepsData = {{ chart_steps|safe }};
+    const labels = JSON.parse('{{ chart_labels|safe }}');
+    const waterData = JSON.parse('{{ chart_water|safe }}');
+    const sleepData = JSON.parse('{{ chart_sleep|safe }}');
+    const scoreData = JSON.parse('{{ chart_score|safe }}');
+    const stepsData = JSON.parse('{{ chart_steps|safe }}');
     
     const telemetryChart = new Chart(ctx, {
         type: 'line',
@@ -425,7 +425,7 @@
         setTimeout(() => {
             clearInterval(interval);
             document.body.style.background = "#ffffff";
-            alert("🚨 EMERGENCY NOTICE: SOS Beacon Transmitted.\nMedWise AI has logged your coordinates and flagged your local profile. Calling local paramedics desk 112/911 immediately.");
+            alert("🚨 EMERGENCY NOTICE: SOS Beacon Transmitted.\nMedIntel has logged your coordinates and flagged your local profile. Calling local paramedics desk 112/911 immediately.");
             sosBtn.style.background = "linear-gradient(135deg, #ef4444, #b91c1c)";
             sosBtn.innerHTML = "<i class='fa-solid fa-phone-flip'></i> Trigger SOS Call";
         }, 2500);
