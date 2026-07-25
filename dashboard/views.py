@@ -170,6 +170,9 @@ class UpdateWellnessView(LoginRequiredMixin, View):
     POST /dashboard/wellness/update/
     Saves daily habits tracking logs.
     """
+    def get(self, request, *args, **kwargs):
+        return redirect('dashboard:index')
+
     def post(self, request, *args, **kwargs):
         try:
             today = timezone.localdate()

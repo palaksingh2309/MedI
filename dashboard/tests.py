@@ -80,3 +80,10 @@ class DashboardViewsTestCase(TestCase):
         self.assertEqual(steps[-1], 8000)
         self.assertEqual(steps[-2], 10000)
         self.assertEqual(steps[0], 0)
+
+    def test_update_wellness_get_redirects(self):
+        self.client.login(username='testpatient', password='TestPassword123')
+        url = reverse('dashboard:update_wellness')
+        response = self.client.get(url)
+        self.assertRedirects(response, reverse('dashboard:index'))
+
