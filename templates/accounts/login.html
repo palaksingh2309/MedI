@@ -37,12 +37,18 @@
                 
                 <div class="form-group">
                     <label for="id_username" class="form-label">Username</label>
-                    <input type="text" name="username" id="id_username" class="form-control" placeholder="Enter Username" required>
+                    <div style="position: relative;">
+                        <i class="fa-solid fa-user" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                        <input type="text" name="username" id="id_username" class="form-control" style="padding-left: 2.75rem;" placeholder="Enter Username" required>
+                    </div>
                 </div>
 
                 <div class="form-group">
                     <label for="id_password" class="form-label">Password</label>
-                    <input type="password" name="password" id="id_password" class="form-control" placeholder="Enter Password" required>
+                    <div style="position: relative;">
+                        <i class="fa-solid fa-lock" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                        <input type="password" name="password" id="id_password" class="form-control" style="padding-left: 2.75rem;" placeholder="Enter Password" required>
+                    </div>
                 </div>
 
                 {% if form.non_field_errors %}

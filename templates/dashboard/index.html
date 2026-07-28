@@ -89,35 +89,47 @@
             
             <div class="widgets-grid">
                 <!-- Water -->
-                <div class="tracker-widget">
+                <div class="tracker-widget glass-card-hover">
                     <div class="widget-icon-inner water"><i class="fa-solid fa-droplet"></i></div>
                     <div class="widget-value">{{ wellness.water_intake|floatformat:0 }} ml</div>
                     <div class="widget-label">Water Intake</div>
-                    <span style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.25rem;">Goal: {{ profile.water_goal|floatformat:0 }} ml</span>
+                    <span style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.25rem; margin-bottom: 0.5rem;">Goal: {{ profile.water_goal|floatformat:0 }} ml</span>
+                    <button type="button" class="quick-count-btn" onclick="quickAddMetric('water', 250)">
+                        <i class="fa-solid fa-plus"></i> 250 ml
+                    </button>
                 </div>
                 
                 <!-- Sleep -->
-                <div class="tracker-widget">
+                <div class="tracker-widget glass-card-hover">
                     <div class="widget-icon-inner sleep"><i class="fa-solid fa-moon"></i></div>
                     <div class="widget-value">{{ wellness.sleep_hours }} hrs</div>
                     <div class="widget-label">Sleep Duration</div>
-                    <span style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.25rem;">Goal: {{ profile.sleep_goal }} hrs</span>
+                    <span style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.25rem; margin-bottom: 0.5rem;">Goal: {{ profile.sleep_goal }} hrs</span>
+                    <button type="button" class="quick-count-btn" onclick="quickAddMetric('sleep', 1)">
+                        <i class="fa-solid fa-plus"></i> 1 hr
+                    </button>
                 </div>
                 
                 <!-- Exercise -->
-                <div class="tracker-widget">
+                <div class="tracker-widget glass-card-hover">
                     <div class="widget-icon-inner exercise"><i class="fa-solid fa-person-running"></i></div>
                     <div class="widget-value">{{ wellness.exercise_duration }} mins</div>
                     <div class="widget-label">Exercise Time</div>
-                    <span style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.25rem;">Goal: 30 mins</span>
+                    <span style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.25rem; margin-bottom: 0.5rem;">Goal: 30 mins</span>
+                    <button type="button" class="quick-count-btn" onclick="quickAddMetric('exercise', 15)">
+                        <i class="fa-solid fa-plus"></i> 15 mins
+                    </button>
                 </div>
 
                 <!-- Steps -->
-                <div class="tracker-widget">
+                <div class="tracker-widget glass-card-hover">
                     <div class="widget-icon-inner steps"><i class="fa-solid fa-shoe-prints"></i></div>
                     <div class="widget-value">{{ wellness.steps }}</div>
                     <div class="widget-label">Steps Walked</div>
-                    <span style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.25rem;">Goal: 10k steps</span>
+                    <span style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.25rem; margin-bottom: 0.5rem;">Goal: 10k steps</span>
+                    <button type="button" class="quick-count-btn" onclick="quickAddMetric('steps', 1000)">
+                        <i class="fa-solid fa-plus"></i> 1,000 steps
+                    </button>
                 </div>
             </div>
         </div>
@@ -496,5 +508,22 @@
     // Polling setup: update predictions index real-time every 10 seconds
     fetchAndRenderPredictions();
     setInterval(fetchAndRenderPredictions, 10000);
+
+    // Quick increment metric handler
+    function quickAddMetric(metric, amount) {
+        let input;
+        if (metric === 'water') input = document.getElementById('water_input');
+        else if (metric === 'sleep') input = document.getElementById('sleep_input');
+        else if (metric === 'exercise') input = document.getElementById('exercise_input');
+        else if (metric === 'steps') input = document.getElementById('steps_input');
+        
+        if (input) {
+            let current = parseFloat(input.value) || 0;
+            input.value = current + amount;
+            // Submit the form
+            const form = document.getElementById('wellnessForm');
+            if (form) form.submit();
+        }
+    }
 </script>
 {% endblock %}

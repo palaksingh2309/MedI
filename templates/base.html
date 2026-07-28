@@ -90,21 +90,26 @@
         <div class="main-wrapper" id="main-content-wrapper">
             <!-- Top Navbar -->
             <nav class="navbar">
-                <button class="sidebar-toggle" id="sidebar-trigger">
-                    <i class="fa-solid fa-bars"></i>
-                </button>
+                <div class="navbar-left" style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="sidebar-toggle" id="sidebar-trigger">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <span class="status-pill status-pill-emerald d-none-mobile">
+                        <span class="status-dot-active"></span> AI Diagnostics Online
+                    </span>
+                </div>
                 
-                <div class="navbar-right" style="margin-left: auto;">
+                <div class="navbar-right" style="margin-left: auto; display: flex; align-items: center; gap: 1rem;">
                     {% if user.is_authenticated %}
-                        <a href="{% url 'accounts:profile' %}" class="navbar-user">
+                        <a href="{% url 'accounts:profile' %}" class="navbar-user" title="View Patient Health Profile">
                             <div class="navbar-user-info">
                                 <span class="navbar-user-name">{{ user.first_name|default:user.username }}</span>
-                                <span class="navbar-user-role">Patient ID: #{{ user.id }}</span>
+                                <span class="navbar-user-role"><i class="fa-solid fa-id-card-clip" style="color:var(--color-primary); font-size: 0.75rem;"></i> Patient #{{ user.id }}</span>
                             </div>
                             {% if user.profile_picture %}
                                 <img src="{{ user.profile_picture.url }}" alt="Profile Avatar" class="navbar-avatar">
                             {% else %}
-                                <div class="navbar-avatar" style="display:flex;align-items:center;justify-content:center;background:rgba(5, 150, 105, 0.1);font-weight:bold;color:var(--color-primary);">
+                                <div class="navbar-avatar" style="display:flex;align-items:center;justify-content:center;background:rgba(5, 150, 105, 0.12);font-weight:700;color:var(--color-primary);border:2px solid var(--color-primary);">
                                     {{ user.username|slice:":1"|upper }}
                                 </div>
                             {% endif %}
