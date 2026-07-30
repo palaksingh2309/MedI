@@ -10,7 +10,7 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Styles -->
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}?v=2.0">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}?v=3.0">
     <style>
         #splash-overlay {
             position: fixed;
@@ -25,7 +25,7 @@
             align-items: center;
             justify-content: center;
             opacity: 1;
-            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         #splash-overlay.fade-out {
@@ -35,21 +35,21 @@
 
         .splash-logo-container {
             position: relative;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
         .splash-logo-ring {
-            width: 90px;
-            height: 90px;
+            width: 80px;
+            height: 80px;
             background: linear-gradient(135deg, #10b981, #059669);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2.75rem;
+            font-size: 2.25rem;
             color: #ffffff;
             box-shadow: 0 10px 25px rgba(5, 150, 105, 0.15);
             z-index: 2;
@@ -58,8 +58,8 @@
 
         .splash-logo-pulse {
             position: absolute;
-            width: 110px;
-            height: 110px;
+            width: 100px;
+            height: 100px;
             border: 2px solid rgba(16, 185, 129, 0.25);
             border-radius: 50%;
             animation: pulse-circle 2s infinite ease-out;
@@ -78,39 +78,39 @@
 
         .splash-title {
             font-family: 'Space Grotesk', sans-serif;
-            font-size: 3rem;
+            font-size: 2.5rem;
             font-weight: 700;
             color: #064e3b;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.25rem;
             letter-spacing: -1px;
             opacity: 0;
-            animation: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            animation-delay: 0.2s;
+            animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation-delay: 0.1s;
         }
 
         .splash-subtitle {
             font-family: 'Outfit', sans-serif;
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 500;
             color: #64748b;
-            margin-bottom: 3rem;
+            margin-bottom: 2rem;
             letter-spacing: 1px;
             text-transform: uppercase;
             opacity: 0;
-            animation: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            animation-delay: 0.4s;
+            animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation-delay: 0.2s;
         }
 
         .splash-progress-container {
-            width: 200px;
+            width: 180px;
             height: 4px;
             background-color: #f1f5f9;
             border-radius: 2px;
             overflow: hidden;
-            margin-bottom: 3rem;
+            margin-bottom: 2rem;
             opacity: 0;
-            animation: fade-in 0.8s ease-in forwards;
-            animation-delay: 0.6s;
+            animation: fade-in 0.6s ease-in forwards;
+            animation-delay: 0.3s;
         }
 
         .splash-progress-bar {
@@ -122,24 +122,24 @@
         }
 
         .splash-quote-card {
-            max-width: 480px;
+            max-width: 440px;
             text-align: center;
             font-family: 'Outfit', sans-serif;
-            font-size: 1.25rem;
+            font-size: 1.1rem;
             font-style: italic;
             font-weight: 400;
             color: #334155;
-            line-height: 1.6;
-            padding: 0 1.5rem;
-            min-height: 80px;
+            line-height: 1.5;
+            padding: 0 1rem;
+            min-height: 50px;
             opacity: 0;
-            transition: opacity 0.5s ease;
+            transition: opacity 0.4s ease;
         }
 
         @keyframes fade-in-up {
             from {
                 opacity: 0;
-                transform: translateY(15px);
+                transform: translateY(12px);
             }
             to {
                 opacity: 1;
@@ -153,7 +153,7 @@
         }
     </style>
 </head>
-<body style="background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%); min-height: 100vh;">
+<body style="background: #fafdfb; min-height: 100vh;">
 
     <!-- Splash Screen Overlay -->
     <div id="splash-overlay">
@@ -175,7 +175,7 @@
 
     <!-- Navigation Header -->
     <nav class="landing-navbar">
-        <a href="#" class="brand-link" style="font-size: 1.5rem;">
+        <a href="#" class="brand-link" style="font-size: 1.4rem;">
             <span class="brand-logo-icon"><i class="fa-solid fa-heart-pulse"></i></span>
             <span>MedIntel</span>
         </a>
@@ -184,10 +184,10 @@
             <li><a href="#features" class="landing-nav-link">Features</a></li>
             <li><a href="#quotes" class="landing-nav-link">Insights</a></li>
             {% if user.is_authenticated %}
-                <li><a href="{% url 'dashboard:index' %}" class="btn btn-primary" style="padding: 0.6rem 1.5rem;">Dashboard <i class="fa-solid fa-arrow-right"></i></a></li>
+                <li><a href="{% url 'dashboard:index' %}" class="btn btn-primary" style="padding: 0.55rem 1.4rem; font-size: 0.9rem;">Dashboard <i class="fa-solid fa-arrow-right"></i></a></li>
             {% else %}
                 <li><a href="{% url 'accounts:login' %}" class="landing-nav-link" style="font-weight: 600;">Sign In</a></li>
-                <li><a href="{% url 'accounts:signup' %}" class="btn btn-primary" style="padding: 0.6rem 1.5rem;">Get Started</a></li>
+                <li><a href="{% url 'accounts:signup' %}" class="btn btn-primary" style="padding: 0.55rem 1.4rem; font-size: 0.9rem;">Get Started</a></li>
             {% endif %}
         </ul>
     </nav>
@@ -195,49 +195,63 @@
     <!-- Hero Section -->
     <header class="landing-hero">
         <div class="hero-text-content">
+            <div class="hero-badge-pill">
+                <span class="status-dot-active"></span>
+                <span>Next-Gen Clinical AI Platform</span>
+            </div>
             <h1>Intelligent Healthcare Made Calm & Trustworthy</h1>
             <p>
-                Experience a premium clinical companion designed to monitor biometrics, compute health indexes, summarize medical reports, and offer safe, certified guidance.
+                Experience a premium clinical companion designed to monitor biometrics, compute health indexes, summarize medical reports, and offer safe guidance.
             </p>
             <div class="hero-actions">
                 {% if user.is_authenticated %}
                     <a href="{% url 'dashboard:index' %}" class="btn btn-primary">Go to Dashboard <i class="fa-solid fa-arrow-right"></i></a>
                 {% else %}
-                    <a href="{% url 'accounts:signup' %}" class="btn btn-primary">Get Started Now</a>
+                    <a href="{% url 'accounts:signup' %}" class="btn btn-primary">Get Started Free <i class="fa-solid fa-arrow-right"></i></a>
                 {% endif %}
-                <a href="#features" class="btn btn-secondary">Learn More</a>
+                <a href="#features" class="btn btn-secondary"><i class="fa-solid fa-compass"></i> Explore Features</a>
             </div>
         </div>
         
         <div class="hero-visual-wrapper">
-            <!-- Modern Medical Vector Grid Graphics -->
-            <svg class="hero-main-illustration" viewBox="0 0 500 450" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <!-- Outer glow rings -->
-                <circle cx="250" cy="225" r="180" fill="url(#paint0_radial)" fill-opacity="0.6"/>
-                <circle cx="250" cy="225" r="130" stroke="rgba(16, 185, 129, 0.12)" stroke-width="2" stroke-dasharray="10 5"/>
-                <!-- Medical Shield Grid -->
-                <path d="M250 80C170 80 140 110 140 190C140 290 250 370 250 370C250 370 360 290 360 190C360 110 330 80 250 80Z" fill="white" stroke="rgba(16, 185, 129, 0.2)" stroke-width="4" style="filter: drop-shadow(0 15px 30px rgba(5,150,105,0.06));"/>
-                <!-- Heart pulse in center -->
-                <path d="M190 225H220L228 200L238 260L248 180L258 245L264 215L270 225H310" stroke="#059669" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-                <!-- DNA Helix representation -->
-                <circle cx="160" cy="140" r="10" fill="#10b981"/>
-                <circle cx="340" cy="140" r="10" fill="#10b981"/>
-                <line x1="170" y1="140" x2="330" y2="140" stroke="rgba(16, 185, 129, 0.15)" stroke-width="3"/>
-                <!-- Gradient definition -->
-                <defs>
-                    <radialGradient id="paint0_radial" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(250 225) rotate(90) scale(180)">
-                        <stop stop-color="#a7f3d0" stop-opacity="0.3"/>
-                        <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
-                    </radialGradient>
-                </defs>
-            </svg>
+            <!-- Modern Clean Glassmorphism Dashboard Preview Card -->
+            <div class="hero-preview-card">
+                <div class="preview-card-header">
+                    <div class="preview-user-info">
+                        <div class="preview-avatar"><i class="fa-solid fa-user-doctor"></i></div>
+                        <div>
+                            <div class="preview-title">Clinical Telemetry Active</div>
+                            <div class="preview-subtitle">Real-time Biometric Analysis</div>
+                        </div>
+                    </div>
+                    <span class="status-pill status-pill-emerald"><i class="fa-solid fa-shield-check"></i> Verified</span>
+                </div>
 
-            <!-- Floating Medical Icons -->
-            <div class="floating-icon float-1" title="Stethoscope"><i class="fa-solid fa-stethoscope"></i></div>
-            <div class="floating-icon float-2" title="Heart"><i class="fa-solid fa-heart"></i></div>
-            <div class="floating-icon float-3" title="DNA"><i class="fa-solid fa-dna"></i></div>
-            <div class="floating-icon float-4" title="Medical Cross"><i class="fa-solid fa-notes-medical"></i></div>
-            <div class="floating-icon float-5" title="ECG"><i class="fa-solid fa-wave-square"></i></div>
+                <div class="preview-stats-row">
+                    <div class="preview-stat-box">
+                        <div class="preview-stat-val">94<span class="stat-unit">/100</span></div>
+                        <div class="preview-stat-lbl">Health Index</div>
+                        <div class="preview-stat-indicator emerald">Optimal</div>
+                    </div>
+                    <div class="preview-stat-box">
+                        <div class="preview-stat-val">2.4<span class="stat-unit">L</span></div>
+                        <div class="preview-stat-lbl">Daily Hydration</div>
+                        <div class="preview-stat-indicator sky">80% Goal</div>
+                    </div>
+                    <div class="preview-stat-box">
+                        <div class="preview-stat-val">7.8<span class="stat-unit">hrs</span></div>
+                        <div class="preview-stat-lbl">Sleep Rest</div>
+                        <div class="preview-stat-indicator amber">Recharged</div>
+                    </div>
+                </div>
+
+                <div class="preview-feature-badge">
+                    <div class="preview-icon"><i class="fa-solid fa-robot"></i></div>
+                    <div class="preview-feature-text">
+                        <strong>AI Clinical Assistant:</strong> "Biometric readings stable. Ready for your daily check-in."
+                    </div>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -248,7 +262,7 @@
             <div id="quote-carousel">
                 <div class="quote-slide">
                     <p class="quote-text" id="carousel-text">"Your health is your greatest wealth."</p>
-                    <p style="color: var(--color-primary); font-weight: 600;">MedIntel Wisdom</p>
+                    <p class="quote-author">MedIntel Wisdom</p>
                 </div>
             </div>
         </div>
@@ -258,69 +272,104 @@
     <section class="features-section" id="features">
         <div class="section-header">
             <h2>Comprehensive Healthcare Features</h2>
-            <p>Explore tools built to support diagnostic insights and promote healthy choices.</p>
+            <p>Explore all 9 tools built to support diagnostic insights and promote healthy daily choices.</p>
+
+            <!-- Feature Category Tabs -->
+            <div class="feature-category-tabs">
+                <button class="feature-tab-btn active" data-filter="all">All Features (9)</button>
+                <button class="feature-tab-btn" data-filter="ai">AI Diagnostics</button>
+                <button class="feature-tab-btn" data-filter="wellness">Wellness & Analytics</button>
+                <button class="feature-tab-btn" data-filter="services">Services & Records</button>
+            </div>
         </div>
         
-        <div class="features-grid">
-            <!-- Feature 1 -->
-            <div class="feature-card">
-                <div class="feature-icon-box"><i class="fa-solid fa-brain"></i></div>
+        <div class="features-grid" id="features-grid">
+            <!-- Feature 1: AI Disease Prediction -->
+            <div class="feature-card" data-category="ai">
+                <div class="feature-card-header">
+                    <div class="feature-icon-box"><i class="fa-solid fa-brain"></i></div>
+                    <span class="feature-tag">AI Powered</span>
+                </div>
                 <h3>AI Disease Prediction</h3>
                 <p>Submit active symptoms to our machine learning models to identify potential health conditions with confidence scores.</p>
             </div>
             
-            <!-- Feature 2 -->
-            <div class="feature-card">
-                <div class="feature-icon-box"><i class="fa-solid fa-robot"></i></div>
+            <!-- Feature 2: AI Medical Chatbot -->
+            <div class="feature-card" data-category="ai">
+                <div class="feature-card-header">
+                    <div class="feature-icon-box"><i class="fa-solid fa-robot"></i></div>
+                    <span class="feature-tag">Interactive</span>
+                </div>
                 <h3>AI Medical Chatbot</h3>
                 <p>Interact with our smart conversational medical assistant to receive guidance and triage advice safely.</p>
             </div>
 
-            <!-- Feature 3 -->
-            <div class="feature-card">
-                <div class="feature-icon-box"><i class="fa-solid fa-pills"></i></div>
-                <h3>Medicine Information</h3>
-                <p>Read about over-the-counter remedies, warnings, purpose descriptions, and potential side effects.</p>
-            </div>
-
-            <!-- Feature 4 -->
-            <div class="feature-card">
-                <div class="feature-icon-box"><i class="fa-solid fa-map-location-dot"></i></div>
-                <h3>Nearby Hospitals</h3>
-                <p>Find nearby clinical centers and emergency departments based on geographic coordinates with map integration.</p>
-            </div>
-
-            <!-- Feature 5 -->
-            <div class="feature-card">
-                <div class="feature-icon-box"><i class="fa-solid fa-file-medical"></i></div>
+            <!-- Feature 3: Medical Report Summarizer -->
+            <div class="feature-card" data-category="ai">
+                <div class="feature-card-header">
+                    <div class="feature-icon-box"><i class="fa-solid fa-file-medical"></i></div>
+                    <span class="feature-tag">Clinical AI</span>
+                </div>
                 <h3>Medical Report Summarizer</h3>
                 <p>Upload hematology and diagnostic reports. Our clinical summaries isolate core metrics instantly.</p>
             </div>
 
-            <!-- Feature 6 -->
-            <div class="feature-card">
-                <div class="feature-icon-box"><i class="fa-solid fa-timeline"></i></div>
-                <h3>Health Timeline</h3>
-                <p>Keep a chronological journal of symptoms, prediction records, weight changes, and report logs.</p>
-            </div>
-
-            <!-- Feature 7 -->
-            <div class="feature-card">
-                <div class="feature-icon-box"><i class="fa-solid fa-chart-line"></i></div>
-                <h3>Health Analytics</h3>
-                <p>Track metrics over time using clean multi-axis visual telemetry charts for water, steps, sleep, and weight.</p>
-            </div>
-
-            <!-- Feature 8 -->
-            <div class="feature-card">
-                <div class="feature-icon-box"><i class="fa-solid fa-heart-pulse"></i></div>
+            <!-- Feature 4: Daily Wellness Tracking -->
+            <div class="feature-card" data-category="wellness">
+                <div class="feature-card-header">
+                    <div class="feature-icon-box"><i class="fa-solid fa-heart-pulse"></i></div>
+                    <span class="feature-tag">Daily Habits</span>
+                </div>
                 <h3>Daily Wellness Tracking</h3>
                 <p>Log your vitals, calorie inputs, stress thresholds, and hydration levels daily for health tracking.</p>
             </div>
 
-            <!-- Feature 9 -->
-            <div class="feature-card">
-                <div class="feature-icon-box"><i class="fa-solid fa-shield-halved"></i></div>
+            <!-- Feature 5: Health Analytics -->
+            <div class="feature-card" data-category="wellness">
+                <div class="feature-card-header">
+                    <div class="feature-icon-box"><i class="fa-solid fa-chart-line"></i></div>
+                    <span class="feature-tag">Telemetry</span>
+                </div>
+                <h3>Health Analytics</h3>
+                <p>Track metrics over time using clean multi-axis visual telemetry charts for water, steps, sleep, and weight.</p>
+            </div>
+
+            <!-- Feature 6: Health Timeline -->
+            <div class="feature-card" data-category="wellness">
+                <div class="feature-card-header">
+                    <div class="feature-icon-box"><i class="fa-solid fa-timeline"></i></div>
+                    <span class="feature-tag">Journal</span>
+                </div>
+                <h3>Health Timeline</h3>
+                <p>Keep a chronological journal of symptoms, prediction records, weight changes, and report logs.</p>
+            </div>
+
+            <!-- Feature 7: Medicine Information -->
+            <div class="feature-card" data-category="services">
+                <div class="feature-card-header">
+                    <div class="feature-icon-box"><i class="fa-solid fa-pills"></i></div>
+                    <span class="feature-tag">Database</span>
+                </div>
+                <h3>Medicine Information</h3>
+                <p>Read about over-the-counter remedies, warnings, purpose descriptions, and potential side effects.</p>
+            </div>
+
+            <!-- Feature 8: Nearby Hospitals -->
+            <div class="feature-card" data-category="services">
+                <div class="feature-card-header">
+                    <div class="feature-icon-box"><i class="fa-solid fa-map-location-dot"></i></div>
+                    <span class="feature-tag">Maps & GPS</span>
+                </div>
+                <h3>Nearby Hospitals</h3>
+                <p>Find nearby clinical centers and emergency departments based on geographic coordinates with map integration.</p>
+            </div>
+
+            <!-- Feature 9: Secure Medical Records -->
+            <div class="feature-card" data-category="services">
+                <div class="feature-card-header">
+                    <div class="feature-icon-box"><i class="fa-solid fa-shield-halved"></i></div>
+                    <span class="feature-tag">Protected</span>
+                </div>
                 <h3>Secure Medical Records</h3>
                 <p>All biometric profile metrics and uploaded records are guarded securely with encryption.</p>
             </div>
@@ -373,7 +422,7 @@
         </div>
     </footer>
 
-    <!-- Script loaders for splash animation and carousel -->
+    <!-- Script loaders for splash animation, category filter, and carousel -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             // Quotes rotation list for general carousel
@@ -387,43 +436,38 @@
                 "Healthy habits today build a stronger tomorrow."
             ];
 
-            // 1. Premium 5-Second Splash Screen Loader Progress Animation
+            // 1. Fast & Snappy Splash Screen Loader Progress Animation (~2.2s total)
             const splashOverlay = document.getElementById("splash-overlay");
             const progressBar = document.getElementById("splash-progress");
             const splashQuote = document.getElementById("splash-quote");
             
-            // Thoughts to display sequentially during the 5 second load
             const splashThoughts = [
-                "Welcome to MedIntel. Analyzing your health telemetry...",
-                "Empowering your daily choices with clinical intelligence...",
+                "Welcome to MedIntel. Analyzing health telemetry...",
+                "Empowering daily choices with clinical intelligence...",
                 "Your journey to optimal wellness starts here."
             ];
 
-            // Show first thought immediately
             splashQuote.innerText = `"${splashThoughts[0]}"`;
             splashQuote.style.opacity = 1;
 
-            // Change thought 2 at 1.8s
             setTimeout(() => {
                 splashQuote.style.opacity = 0;
                 setTimeout(() => {
                     splashQuote.innerText = `"${splashThoughts[1]}"`;
                     splashQuote.style.opacity = 1;
-                }, 400);
-            }, 1800);
+                }, 200);
+            }, 800);
 
-            // Change thought 3 at 3.4s
             setTimeout(() => {
                 splashQuote.style.opacity = 0;
                 setTimeout(() => {
                     splashQuote.innerText = `"${splashThoughts[2]}"`;
                     splashQuote.style.opacity = 1;
-                }, 400);
-            }, 3400);
+                }, 200);
+            }, 1500);
 
-            // Animate progress bar over exactly 5000ms using requestAnimationFrame for high performance
             let start = null;
-            const totalDuration = 5000; // 5 seconds
+            const totalDuration = 2200; // 2.2 seconds fast load
             
             function animateProgress(timestamp) {
                 if (!start) start = timestamp;
@@ -434,13 +478,12 @@
                 if (elapsed < totalDuration) {
                     requestAnimationFrame(animateProgress);
                 } else {
-                    // Hide splash screen after completion
                     setTimeout(() => {
                         splashOverlay.classList.add("fade-out");
                         setTimeout(() => {
                             splashOverlay.style.display = "none";
-                        }, 800); // Wait for CSS opacity transition to complete
-                    }, 100);
+                        }, 600);
+                    }, 50);
                 }
             }
             requestAnimationFrame(animateProgress);
@@ -457,6 +500,34 @@
                     carouselText.style.opacity = 1;
                 }, 400);
             }, 6000);
+
+            // 3. Feature Category Tabs Filter
+            const tabButtons = document.querySelectorAll(".feature-tab-btn");
+            const featureCards = document.querySelectorAll(".feature-card");
+
+            tabButtons.forEach(btn => {
+                btn.addEventListener("click", () => {
+                    tabButtons.forEach(b => b.classList.remove("active"));
+                    btn.classList.add("active");
+
+                    const filter = btn.getAttribute("data-filter");
+
+                    featureCards.forEach(card => {
+                        const category = card.getAttribute("data-category");
+                        if (filter === "all" || category === filter) {
+                            card.style.display = "flex";
+                            card.style.opacity = "0";
+                            card.style.transform = "translateY(10px)";
+                            setTimeout(() => {
+                                card.style.opacity = "1";
+                                card.style.transform = "translateY(0)";
+                            }, 50);
+                        } else {
+                            card.style.display = "none";
+                        }
+                    });
+                });
+            });
         });
     </script>
 </body>
